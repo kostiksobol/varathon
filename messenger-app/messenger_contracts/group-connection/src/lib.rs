@@ -7,8 +7,6 @@ use scale_info::TypeInfo;
 
 use group_connection_io::{ConnectionHandleAction, ConnectionHandleEvent, ConnectionInit, Message, ConnectionState};
 
-const GAS_LIMIT_FOR_ADD_USER_IN_MAIN_CONNECTOR: u64 = 3_000_000_000;
-
 #[derive(Default, Encode, Decode, TypeInfo)]
 pub struct Connection {
     pub main_connector_id: ActorId,
