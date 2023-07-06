@@ -9,13 +9,12 @@ use gstd::{ActorId};
 pub mod metafns{
     pub type State = <ProgramMetadata as Metadata>::State;
 
-    pub fn get_connections(state: State, actor_id: ActorId) -> Vec<ActorId>{
-        let mut res = Vec::new();
-        for connection in state.connections_users{
-            if connection.1.0 == actor_id || connection.1.1 == actor_id{
-                res.push(connection.0);
+    pub fn get_user_connections(state: State, user: ActorId) -> Vec<ActorId>{
+        for user_connection in state.users_connections{
+            if user_connection.0 == user{
+                return user_connection.1;
             }
         }
-        res
+        Default::default()
     }
 }

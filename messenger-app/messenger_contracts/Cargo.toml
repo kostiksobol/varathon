@@ -2,7 +2,8 @@
 members = [
     "pair-connection",
     "main-connector",
-    "main-connector/state"
+    "main-connector/state",
+    "group-connection"
 ]
 
 [workspace.dependencies]
@@ -15,3 +16,4 @@ scale-info = { version = "2", default-features = false }
 
 main-connector-io.path = "main-connector/io"
 pair-connection-io.path = "pair-connection/io"
+group-connection-io.path = "group-connection/io"

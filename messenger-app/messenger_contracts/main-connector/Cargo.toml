@@ -13,6 +13,7 @@ parity-scale-codec.workspace = true
 
 pair-connection-io.workspace = true
 main-connector-io.workspace = true
+group-connection-io.workspace = true
 
 [build-dependencies]
 gear-wasm-builder.workspace = true

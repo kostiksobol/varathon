@@ -1,13 +1,15 @@
 #![no_std]
 
 use gstd::{exec, msg, prelude::*, ActorId};
-use pair_connection_io::{ConnectionHandleAction, ConnectionHandleEvent, ConnectionInit, Message};
+
 use parity_scale_codec::{Decode, Encode};
 use scale_info::TypeInfo;
 
+use pair_connection_io::{ConnectionHandleAction, ConnectionHandleEvent, ConnectionInit, Message};
+
 #[derive(Default, Encode, Decode, TypeInfo)]
 pub struct Connection {
-    pub sides: [ActorId; 2],
+    pub users: [ActorId; 2],
     pub messages: Vec<Message>,
 }
 
@@ -15,7 +17,7 @@ impl Connection {
     fn send(&mut self, encrypted_content: String) {
         let msg_source = msg::source();
 
-        assert!(self.sides.contains(&msg_source), "You are not allowed"); // // Actually, here all the gas will be taken defending from such ddos attack
+        assert!(self.users.contains(&msg_source), "You are not allowed"); // // Actually, here all the gas will be taken defending from such ddos attack
 
         let message = Message {
             from: msg_source,
@@ -25,9 +27,15 @@ impl Connection {
 
         self.messages.push(message.clone());
 
-        for side in self.sides {
-            msg::send(side, ConnectionHandleEvent::Sended { message: message.clone() }, 0)
-                .expect("Error in send ConnectionHandleEvent::Sendod");
+        for user in self.users.iter() {
+            msg::send(
+                *user,
+                ConnectionHandleEvent::Sended {
+                    message: message.clone(),
+                },
+                0,
+            )
+            .expect("Error in send Sended");
         }
     }
 }
@@ -38,7 +46,7 @@ static mut CONNECTION: Option<Connection> = None;
 unsafe extern "C" fn init() {
     let init_config: ConnectionInit = msg::load().expect("Error in decoding ConnectionInit");
     CONNECTION = Some(Connection {
-        sides: [init_config.side1, init_config.side2],
+        users: [init_config.user1, init_config.user2],
         messages: Vec::new(),
     });
 }
@@ -50,14 +58,14 @@ unsafe extern "C" fn handle() {
     let connection = CONNECTION.get_or_insert(Default::default());
 
     match action {
-        ConnectionHandleAction::Send{encrypted_content} => connection.send(encrypted_content),
+        ConnectionHandleAction::Send { encrypted_content } => connection.send(encrypted_content),
     };
 }
 
 #[no_mangle]
 extern "C" fn state() {
     let connection: &Connection = unsafe { CONNECTION.get_or_insert(Default::default()) };
-    msg::reply(&connection.messages, 0).expect("Failed to share state");
+    msg::reply(&connection.messages, 0).expect("Failed to share state'");
 }
 
 #[no_mangle]

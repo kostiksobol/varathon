@@ -1,46 +1,88 @@
 #![no_std]
 
+use gstd::{exec, msg, prelude::*, ActorId, CodeId};
+use main_connector_io::*;
 use parity_scale_codec::{Decode, Encode};
 use scale_info::TypeInfo;
-use gstd::{msg, prelude::*, ActorId, exec, CodeId};
-use main_connector_io::*;
-use pair_connection_io::*;
-
-
 #[derive(Default)]
-pub struct Connector{
-    pub connection_code_id: CodeId,
-    pub users: HashMap<ActorId, Vec<ActorId>>,
-    pub connections_users: HashMap<ActorId, (ActorId, ActorId)>,
+pub struct Connector {
+    pub pair_connection_code_id: CodeId,
+    pub group_connection_code_id: CodeId,
+    pub all_connections: BTreeSet<ActorId>,
+    pub users_connections: BTreeMap<ActorId, Vec<ActorId>>,
 }
 
-impl Connector{
-    fn connect(&mut self, side1: ActorId, side2: ActorId){
+impl Connector {
+    fn create_pair_connection_with(&mut self, user: ActorId) {
+        let user1 = msg::source();
+        let user2 = user;
+
         let (_, address) = gstd::prog::ProgramGenerator::create_program(
-            self.connection_code_id,
-            ConnectionInit {
-                side1,
-                side2,
-            }
-            .encode(),
+            self.pair_connection_code_id,
+            pair_connection_io::ConnectionInit { user1, user2 }.encode(),
             0,
         )
-        .expect("Error during Connection program initialization");
-        if self.users.contains_key(&side1){
-            self.users.get_mut(&side1).unwrap().push(address);
+        .expect("Error during PairConnection program initialization'");
+
+        self.all_connections.insert(address);
+
+        match self.users_connections.get_mut(&user1) {
+            Some(user_connections) => user_connections.push(address),
+            None => {
+                self.users_connections.insert(user1, vec![address]);
+            }
         }
-        else{
-            self.users.insert(side1, vec![address]);
+        match self.users_connections.get_mut(&user2) {
+            Some(user_connections) => user_connections.push(address),
+            None => {
+                self.users_connections.insert(user2, vec![address]);
+            }
         }
-        if self.users.contains_key(&side2){
-            self.users.get_mut(&side2).unwrap().push(address);
+
+        msg::send(user1, ConnectorHandleEvent::PairConnectionCreated, 0)
+            .expect("Error in send PairConnectionCreated");
+        msg::send(user2, ConnectorHandleEvent::PairConnectionCreated, 0)
+            .expect("Error in send PairConnectionCreated");
+    }
+    fn create_group_connection(&mut self) {
+        let msg_source = msg::source();
+
+        let (_, address) = gstd::prog::ProgramGenerator::create_program(
+            self.group_connection_code_id,
+            group_connection_io::ConnectionInit { user: msg_source }.encode(),
+            0,
+        )
+        .expect("Error during GroupConnection program initialization");
+
+        self.all_connections.insert(address);
+
+        match self.users_connections.get_mut(&msg_source) {
+            Some(user_connections) => user_connections.push(address),
+            None => {
+                self.users_connections.insert(msg_source, vec![address]);
+            }
         }
-        else{
-            self.users.insert(side2, vec![address]);
+
+        msg::send(msg_source, ConnectorHandleEvent::GroupConnectionCreated, 0)
+            .expect("Error in send GroupConnectionCreated");
+    }
+    fn add_user_to_group_connection(&mut self, user: ActorId) {
+        let msg_source = msg::source();
+
+        assert!(
+            self.all_connections.contains(&msg_source),
+            "This connection was never created"
+        );
+
+        match self.users_connections.get_mut(&user) {
+            Some(user_connections) => user_connections.push(msg_source),
+            None => {
+                self.users_connections.insert(user, vec![msg_source]);
+            }
         }
-        self.connections_users.insert(address, (side1, side2));
-        msg::send(side1, ConnectorHandleEvent::ConnectionCreated, 0).expect("Error");
-        msg::send(side2, ConnectorHandleEvent::ConnectionCreated, 0).expect("Error");
+
+        msg::reply(ConnectorHandleEvent::AddedUserToGroupConnection, 0)
+            .expect("Error in reply AddedUserToGroupConnection");
     }
 }
 
@@ -48,26 +90,41 @@ static mut CONNECTOR: Option<Connector> = None;
 
 #[no_mangle]
 unsafe extern "C" fn init() {
-    let code_id: CodeId = msg::load().expect("Error in decoding ConnectionInit");
-    CONNECTOR = Some(Connector{connection_code_id: code_id, ..Default::default()});
+    let init_config: ConnectorInit = msg::load().expect("Error in decoding ConnectionInit");
+    CONNECTOR = Some(Connector {
+        pair_connection_code_id: init_config.pair_connection_code_id,
+        group_connection_code_id: init_config.group_connection_code_id,
+        ..Default::default()
+    });
 }
 
 #[no_mangle]
 unsafe extern "C" fn handle() {
-    let action: ConnectorHandleAction = msg::load().expect("Unable to decode MessengerHandleAction");
+    let action: ConnectorHandleAction =
+        msg::load().expect("Unable to decode MessengerHandleAction");
     let connector = CONNECTOR.get_or_insert(Default::default());
 
     match action {
-        ConnectorHandleAction::Connect { to } => connector.connect(msg::source(), to),
+        ConnectorHandleAction::CreatePairConnetionWith { user } => {
+            connector.create_pair_connection_with(user)
+        }
+        ConnectorHandleAction::CreateGroupConnection => connector.create_group_connection(),
+        ConnectorHandleAction::AddUserToGroupConnection { user } => {
+            connector.add_user_to_group_connection(user)
+        }
     };
 }
 
 #[no_mangle]
 extern "C" fn state() {
     let connector: &Connector = unsafe { CONNECTOR.get_or_insert(Default::default()) };
-    let connection_state = ConnectorState{
-        users: connector.users.iter().map(|(key, value)| (*key, (*value).clone())).collect(),
-        connections_users: connector.connections_users.iter().map(|(key, value)| (*key, *value)).collect()};
+    let connection_state = ConnectorState {
+        users_connections: connector
+            .users_connections
+            .iter()
+            .map(|(key, value)| (*key, value.clone()))
+            .collect(),
+    };
     msg::reply(&connection_state, 0).expect("Failed to share state");
 }
 

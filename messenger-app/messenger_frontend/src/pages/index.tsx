@@ -1,10 +1,17 @@
-import { Route, Routes } from 'react-router-dom';
-import { Home } from './home';
+import { Route, Routes, Outlet } from 'react-router-dom';
+// import { Home } from './home';
 
-const routes = [{ path: '/', Page: Home }];
+import { MessagesUsersForm, ChatsForm } from './tmp';
+
+// const routes = [{ path: '/', Page: Home }];
 
 function Routing() {
-  const getRoutes = () => routes.map(({ path, Page }) => <Route key={path} path={path} element={<Page />} />);
+  const getRoutes = () =>
+    (
+      <Route key='/' path='/' element={<ChatsForm><Outlet /></ChatsForm>}>
+        children={[<Route path="chat/:id" element={<MessagesUsersForm />} />]}
+      </Route>
+    );
 
   return <Routes>{getRoutes()}</Routes>;
 }
