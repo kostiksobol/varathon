@@ -228,7 +228,7 @@ export function ChatsForm({ children }: { children: React.ReactNode }) {
     >
       <div
         style={{
-          width: '30%',
+          width: '40%',
           borderRight: '1px solid #555',
           backgroundColor: '#222',
           overflowY: 'auto',
@@ -286,8 +286,6 @@ export function ChatsForm({ children }: { children: React.ReactNode }) {
             Create New Chat
           </button>
         </div>
-      </div>
-      <div style={{ width: '70%' }}>
         <div style={{ display: 'flex', flexDirection: 'column', padding: '1rem' }}>
           <textarea
             value={newMessage}
@@ -300,7 +298,7 @@ export function ChatsForm({ children }: { children: React.ReactNode }) {
               borderRadius:'4px',
               backgroundColor: '#444',
               color: '#fff',
-              height: '200px',
+              height: '100px',
               resize: 'vertical',
             }}
           />
@@ -319,6 +317,8 @@ export function ChatsForm({ children }: { children: React.ReactNode }) {
             Send Message
           </button>
         </div>
+      </div>
+      <div style={{ width: '70%', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
         {children}
       </div>
     </div>
