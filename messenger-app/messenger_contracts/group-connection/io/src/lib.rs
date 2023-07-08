@@ -33,13 +33,13 @@ pub enum ConnectionHandleEvent {
     Sended { message: Message },
 }
 
-#[derive(Default, Encode, Decode, TypeInfo)]
-pub struct ConnectionState{
+#[derive(Default, Encode, Decode, TypeInfo, PartialEq, Eq, Debug)]
+pub struct ConnectionState {
     pub users: Vec<ActorId>,
     pub messages: Vec<Message>,
 }
 
-#[derive(Debug, Encode, Decode, TypeInfo, Clone)]
+#[derive(Debug, Encode, Decode, TypeInfo, Clone, PartialEq, Eq)]
 pub struct Message {
     pub from: ActorId,
     pub encrypted_content: String,

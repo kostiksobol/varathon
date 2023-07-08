@@ -43,7 +43,7 @@ pub struct Connector {
     pub users_connections: BTreeMap<ActorId, Vec<ActorId>>,
 }
 
-#[derive(Default, Encode, Decode, TypeInfo)]
+#[derive(Default, Encode, Decode, TypeInfo, PartialEq, Eq, Debug)]
 pub struct ConnectorState {
     pub users_connections: Vec<(ActorId, Vec<ActorId>)>,
 }

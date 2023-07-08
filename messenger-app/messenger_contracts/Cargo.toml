@@ -7,12 +7,14 @@ members = [
 ]
 
 [workspace.dependencies]
-gstd = { git = "https://github.com/gear-tech/gear.git", rev = "78dfa07"}
-gmeta = {  git = "https://github.com/gear-tech/gear.git", rev = "78dfa07" }
-gear-wasm-builder = { git = "https://github.com/gear-tech/gear.git", rev = "78dfa07"}
+gstd = { git = "https://github.com/gear-tech/gear.git", rev = "78dfa07" }
+gmeta = {  git = "https://github.com/gear-tech/gear.git", rev = "78dfa07"  }
+gtest = {  git = "https://github.com/gear-tech/gear", rev = "78dfa07" }
+gear-wasm-builder = { git = "https://github.com/gear-tech/gear.git", rev = "78dfa07" }
 
 parity-scale-codec = { version = "3", default-features = false }
 scale-info = { version = "2", default-features = false }
+hashbrown = "0.13"
 
 main-connector-io.path = "main-connector/io"
 pair-connection-io.path = "pair-connection/io"

@@ -7,15 +7,22 @@ edition = "2021"
 
 [dependencies]
 gstd.workspace = true
+gmeta.workspace = true
 
 scale-info.workspace = true
 parity-scale-codec.workspace = true
+hashbrown.workspace = true
 
 group-connection-io.workspace = true
 main-connector-io.workspace = true
 
 [build-dependencies]
 gear-wasm-builder.workspace = true
+gmeta.workspace = true
 
 group-connection-io.workspace = true
 main-connector-io.workspace = true
+
+[dev-dependencies]
+gtest.workspace = true
+gstd = { workspace = true, features = ["debug"] }

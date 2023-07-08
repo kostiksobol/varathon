@@ -5,8 +5,9 @@ use gstd::{exec, msg, prelude::*, ActorId};
 use parity_scale_codec::{Decode, Encode};
 use scale_info::TypeInfo;
 
-use group_connection_io::{ConnectionHandleAction, ConnectionHandleEvent, ConnectionInit, Message, ConnectionState};
-
+use group_connection_io::{
+    ConnectionHandleAction, ConnectionHandleEvent, ConnectionInit, ConnectionState, Message,
+};
 #[derive(Default, Encode, Decode, TypeInfo)]
 pub struct Connection {
     pub main_connector_id: ActorId,
@@ -90,7 +91,10 @@ unsafe extern "C" fn handle() {
 #[no_mangle]
 extern "C" fn state() {
     let connection: &Connection = unsafe { CONNECTION.get_or_insert(Default::default()) };
-    let connection_state = ConnectionState{users: connection.users.iter().copied().collect(), messages: connection.messages.iter().cloned().collect()};
+    let connection_state = ConnectionState {
+        users: connection.users.iter().copied().collect(),
+        messages: connection.messages.iter().cloned().collect(),
+    };
     msg::reply(&connection_state, 0).expect("Failed to share state");
 }
 
