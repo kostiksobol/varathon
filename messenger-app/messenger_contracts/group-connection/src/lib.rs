@@ -24,20 +24,20 @@ impl Connection {
 
         self.users_encrypted_symkeys.try_insert(user, encrypted_symkey).expect("Such person is already in the chat");
 
-        // msg::send_with_gas(
-        //     self.main_connector_id,
-        //     main_connector_io::ConnectorHandleAction::AddUserToGroupConnection { user },
-        //     1_000_000_000,
-        //     0,
-        // )
-        // .expect("Error in send AddUserToGroupConnection'");
-
-        msg::send(
+        msg::send_with_gas(
             self.main_connector_id,
             main_connector_io::ConnectorHandleAction::AddUserToGroupConnection { user },
+            1_000_000_000,
             0,
         )
-        .expect("Error in send AddUserToGroupConnection");
+        .expect("Error in send AddUserToGroupConnection'");
+
+        // msg::send(
+        //     self.main_connector_id,
+        //     main_connector_io::ConnectorHandleAction::AddUserToGroupConnection { user },
+        //     0,
+        // )
+        // .expect("Error in send AddUserToGroupConnection");
     }
     fn send(&mut self, encrypted_content: String) {
         let msg_source = msg::source();
