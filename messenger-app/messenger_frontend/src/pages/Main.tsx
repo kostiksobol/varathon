@@ -149,10 +149,6 @@ export function MessagesForm() {
   const params = useParams<{ id: HexString }>();
   const chat_id = params.id!;
 
-
-  // const { state } = useReadFullState<GroupConnectionState>(chat_id, useMetadata(metaGroupConnectionTxt));
-  // const messages = state?.messages;
-
   const {account} = useAccount();
   const { state: encrypted_symkey_for_selected_chat_id} = useGroupState<string>('get_user_encrypted_symkey', chat_id, account?.decodedAddress);
 
@@ -191,9 +187,19 @@ export function MessagesForm() {
               backgroundColor: '#444',
               padding: '10px',
               borderRadius: '5px',
+              marginBottom: '10px', // Add margin at the bottom to separate messages
             }}
           >
-            {decodeEncryptedContent(message.encryptedContent)}
+            <div
+              style={{
+                border: '1px solid #ddd',
+                borderRadius: '5px',
+                padding: '0.5rem',
+                wordBreak: 'break-all', // To handle long decrypted content
+              }}
+            >
+              {decodeEncryptedContent(message.encryptedContent)}
+            </div>
           </div>
           <div
             style={{
@@ -232,9 +238,20 @@ function UsersForm() {
     >
       {!users && <div><h1>Loading ...</h1></div>}
       {users && users.map((user, index) => (
-        // <div key={index} style={{ marginBottom: '10px' }}>
-          <div key={user} style={{ fontWeight: 'bold', color: '#ddd' }}>{user}</div>
-        // </div>
+        <div
+          key={user}
+          style={{
+            border: '1px solid #ddd',
+            borderRadius: '5px',
+            marginBottom: '0.5rem',
+            padding: '0.5rem',
+            overflow: 'hidden',
+            whiteSpace: 'normal',   // Allow text to wrap to the next line
+            wordWrap: 'break-word', // Break words if they are too long to fit in one line
+          }}
+        >
+          <div style={{ fontWeight: 'bold', color: '#ddd' }}>{user}</div>
+        </div>
       ))}
     </div>
   );
@@ -258,26 +275,36 @@ function Chat({ chat_id, selectedChatId,  }: { chat_id: string; selectedChatId: 
   }, [navigate, chat_id]);
 
   return (
-      <button
-        key={chat_id}
-        onClick={onClick}
+    <div
+      key={chat_id}
+      onClick={onClick}
+      onContextMenu={(e) => {
+        e.preventDefault();
+      }}
+      style={{
+        marginBottom: '10px',
+        fontWeight: selectedChatId === chat_id ? 'bold' : 'normal',
+        display: 'flex',
+        alignItems: 'center',
+        backgroundColor: selectedChatId === chat_id ? '#444' : 'inherit',
+        padding: '10px',
+        border: 'none',
+        cursor: 'pointer',
+        transition: 'background-color 0.3s',
+        width: 'fit-content',
+      }}
+    >
+      <div
         style={{
-          marginBottom: '10px',
-          fontWeight: selectedChatId === chat_id ? 'bold' : 'normal',
-          display: 'flex',
-          alignItems: 'center',
-          backgroundColor: selectedChatId === chat_id ? '#444' : 'inherit',
-          padding: '10px',
-          border: 'none',
-          cursor: 'pointer',
-          transition: 'background-color 0.3s',
-          width: 'fit-content',
+          border: '1px solid #ddd',
+          borderRadius: '5px',
+          padding: '0.5rem',
+          wordBreak: 'break-all',  // Break the word if it's too long to fit in one line
         }}
       >
-          <div>
-            <div style={{ fontWeight: 'bold', color: '#ddd' }}>{chat_id}</div>
-          </div>
-      </button>
+        <div style={{ fontWeight: 'bold', color: '#ddd' }}>{chat_id}</div>
+      </div>
+    </div>
   );
 }
 // { children }: { children: React.ReactNode }
