@@ -47,26 +47,65 @@ pub fn some_situation_for_testing(sys: &System) -> (Program, Vec<Program>) {
         sys,
         &main_connector_program,
         ACTOR[0],
+        "-1".to_string(),
     ));
     groups.push(check::create_group_connection(
         sys,
         &main_connector_program,
         ACTOR[0],
+        "-2".to_string(),
     ));
     groups.push(check::create_group_connection(
         sys,
         &main_connector_program,
         ACTOR[0],
+        "-3".to_string(),
     ));
 
-    check::add_user_to_group_connection(&main_connector_program, &groups[0], ACTOR[0], ACTOR[1]);
+    check::add_user_to_group_connection(
+        &main_connector_program,
+        &groups[0],
+        ACTOR[0],
+        ACTOR[1],
+        "-4".to_string(),
+    );
 
-    check::add_user_to_group_connection(&main_connector_program, &groups[1], ACTOR[0], ACTOR[1]);
-    check::add_user_to_group_connection(&main_connector_program, &groups[1], ACTOR[0], ACTOR[2]);
+    check::add_user_to_group_connection(
+        &main_connector_program,
+        &groups[1],
+        ACTOR[0],
+        ACTOR[1],
+        "-5".to_string(),
+    );
+    check::add_user_to_group_connection(
+        &main_connector_program,
+        &groups[1],
+        ACTOR[0],
+        ACTOR[2],
+        "-6".to_string(),
+    );
 
-    check::add_user_to_group_connection(&main_connector_program, &groups[2], ACTOR[0], ACTOR[1]);
-    check::add_user_to_group_connection(&main_connector_program, &groups[2], ACTOR[0], ACTOR[2]);
-    check::add_user_to_group_connection(&main_connector_program, &groups[2], ACTOR[0], ACTOR[3]);
+    check::add_user_to_group_connection(
+        &main_connector_program,
+        &groups[2],
+        ACTOR[0],
+        ACTOR[1],
+        "-7".to_string(),
+    );
+    check::add_user_to_group_connection(
+        &main_connector_program,
+        &groups[2],
+        ACTOR[0],
+        ACTOR[2],
+        "-8".to_string(),
+    );
+    check::add_user_to_group_connection(
+        &main_connector_program,
+        &groups[2],
+        ACTOR[0],
+        ACTOR[3],
+        "-9".to_string(),
+    );
 
     (main_connector_program, groups)
 }

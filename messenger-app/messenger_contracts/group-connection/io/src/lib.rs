@@ -19,12 +19,18 @@ impl Metadata for ProgramMetadata {
 #[derive(Encode, Decode, TypeInfo)]
 pub struct ConnectionInit {
     pub user: ActorId,
+    pub encrypted_symkey: String,
 }
 
 #[derive(Clone, Encode, Decode, TypeInfo)]
 pub enum ConnectionHandleAction {
-    Add { user: ActorId },
-    Send { encrypted_content: String },
+    Add {
+        user: ActorId,
+        encrypted_symkey: String,
+    },
+    Send {
+        encrypted_content: String,
+    },
 }
 
 #[derive(Encode, Decode, TypeInfo)]
@@ -35,7 +41,7 @@ pub enum ConnectionHandleEvent {
 
 #[derive(Default, Encode, Decode, TypeInfo, PartialEq, Eq, Debug)]
 pub struct ConnectionState {
-    pub users: Vec<ActorId>,
+    pub users_encrypted_symkeys: Vec<(ActorId, String)>,
     pub messages: Vec<Message>,
 }
 

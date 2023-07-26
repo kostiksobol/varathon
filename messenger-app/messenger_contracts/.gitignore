@@ -1,1 +1,5 @@
 target/
+.binpath
+.metahash
+*.meta.txt
+meta.txt

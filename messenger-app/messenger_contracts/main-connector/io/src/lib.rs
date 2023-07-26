@@ -24,13 +24,15 @@ pub struct ConnectorInit {
 
 #[derive(Clone, Encode, Decode, TypeInfo, Eq, PartialEq)]
 pub enum ConnectorHandleAction {
+    RegisterPubKey { pubkey: String },
     CreatePairConnetionWith { user: ActorId },
-    CreateGroupConnection,
+    CreateGroupConnection { encrypted_symkey: String },
     AddUserToGroupConnection { user: ActorId },
 }
 
 #[derive(Encode, Decode, TypeInfo)]
 pub enum ConnectorHandleEvent {
+    RegisteredPubKey,
     PairConnectionCreated,
     GroupConnectionCreated,
     AddedUserToGroupConnection,
@@ -39,11 +41,14 @@ pub enum ConnectorHandleEvent {
 pub struct Connector {
     pub pair_connection_code_id: CodeId,
     pub group_connection_code_id: CodeId,
+    pub users_pubkeys: BTreeMap<ActorId, String>,
     pub all_connections: BTreeSet<ActorId>,
     pub users_connections: BTreeMap<ActorId, Vec<ActorId>>,
 }
 
 #[derive(Default, Encode, Decode, TypeInfo, PartialEq, Eq, Debug)]
 pub struct ConnectorState {
+    pub users_pubkeys: Vec<(ActorId, String)>,
+    pub all_connections: Vec<ActorId>,
     pub users_connections: Vec<(ActorId, Vec<ActorId>)>,
 }

@@ -24,6 +24,7 @@ pub fn add(
     main_connector_program: &Program,
     adder: u64,
     user: u64,
+    encrypted_symkey: String,
 ) {
     let group_state_before_add: ConnectionState = group_connection_program
         .read_state()
@@ -32,8 +33,13 @@ pub fn add(
         .read_state()
         .expect("Error in reading state");
 
-    let run_res =
-        group_connection_program.send(adder, ConnectionHandleAction::Add { user: user.into() });
+    let run_res = group_connection_program.send(
+        adder,
+        ConnectionHandleAction::Add {
+            user: user.into(),
+            encrypted_symkey,
+        },
+    );
     if !run_res.main_failed() {
         assert!(run_res.others_failed());
     }

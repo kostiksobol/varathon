@@ -3,13 +3,20 @@ use gstd::{prelude::*, ActorId};
 use gtest::{Program, System};
 use main_connector_io::{ConnectorHandleAction, ConnectorState};
 
-pub fn create_group_connection(sys: &System, main_connector_program: &Program, creator: u64) {
+pub fn create_group_connection(
+    sys: &System,
+    main_connector_program: &Program,
+    creator: u64,
+    encrypted_symkey: String,
+) {
     let main_state_before: ConnectorState = main_connector_program
         .read_state()
         .expect("Error in reading state");
 
-    let run_res =
-        main_connector_program.send(creator, ConnectorHandleAction::CreateGroupConnection);
+    let run_res = main_connector_program.send(
+        creator,
+        ConnectorHandleAction::CreateGroupConnection { encrypted_symkey },
+    );
     assert!(run_res.main_failed());
 
     let mut main_state_after: ConnectorState = main_connector_program
@@ -24,6 +31,7 @@ pub fn add_user_to_group_connection(
     group_connection_program: &Program,
     adder: u64,
     user: u64,
+    encrypted_symkey: String,
 ) {
     let group_state_before_add: ConnectionState = group_connection_program
         .read_state()
@@ -32,8 +40,13 @@ pub fn add_user_to_group_connection(
         .read_state()
         .expect("Error in reading state");
 
-    let run_res =
-        group_connection_program.send(adder, ConnectionHandleAction::Add { user: user.into() });
+    let run_res = group_connection_program.send(
+        adder,
+        ConnectionHandleAction::Add {
+            user: user.into(),
+            encrypted_symkey,
+        },
+    );
     if !run_res.main_failed() {
         assert!(run_res.others_failed());
     }

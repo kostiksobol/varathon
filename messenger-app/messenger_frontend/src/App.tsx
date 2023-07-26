@@ -4,15 +4,23 @@ import { Header, Footer, ApiLoader } from 'components';
 import { withProviders } from 'hocs';
 import 'App.scss';
 
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 function Component() {
+  const navigate = useNavigate();
   const { isApiReady } = useApi();
-  const { isAccountReady } = useAccount();
+  const {isAccountReady, account} = useAccount();
+
+  useEffect(() => {
+    navigate(`/${account?.meta.name}`);
+  }, [account?.address])
 
   const isAppReady = isApiReady && isAccountReady;
 
   return (
     <>
-      <Header isAccountVisible={isAccountReady} />
+      <Header />
       <main>{isAppReady ? <Routing /> : <ApiLoader />}</main>
       <Footer />
     </>

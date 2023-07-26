@@ -1,4 +1,5 @@
 #![no_std]
+#![feature(map_try_insert)]
 
 use gstd::{exec, msg, prelude::*, ActorId, CodeId};
 use main_connector_io::*;
@@ -8,11 +9,17 @@ use scale_info::TypeInfo;
 pub struct Connector {
     pub pair_connection_code_id: CodeId,
     pub group_connection_code_id: CodeId,
+    pub users_pubkeys: BTreeMap<ActorId, String>,
     pub all_connections: BTreeSet<ActorId>,
     pub users_connections: BTreeMap<ActorId, Vec<ActorId>>,
 }
 
 impl Connector {
+    fn register_pub_key(&mut self, pubkey: String) {
+        self.users_pubkeys
+            .try_insert(msg::source(), pubkey)
+            .expect("You have already been registered");
+    }
     fn create_pair_connection_with(&mut self, user: ActorId) {
         let user1 = msg::source();
         let user2 = user;
@@ -38,18 +45,17 @@ impl Connector {
                 self.users_connections.insert(user2, vec![address]);
             }
         }
-
-        msg::send(user1, ConnectorHandleEvent::PairConnectionCreated, 0)
-            .expect("Error in send PairConnectionCreated");
-        msg::send(user2, ConnectorHandleEvent::PairConnectionCreated, 0)
-            .expect("Error in send PairConnectionCreated");
     }
-    fn create_group_connection(&mut self) {
+    fn create_group_connection(&mut self, encrypted_symkey: String) {
         let msg_source = msg::source();
 
         let (_, address) = gstd::prog::ProgramGenerator::create_program(
             self.group_connection_code_id,
-            group_connection_io::ConnectionInit { user: msg_source }.encode(),
+            group_connection_io::ConnectionInit {
+                user: msg_source,
+                encrypted_symkey,
+            }
+            .encode(),
             0,
         )
         .expect("Error during GroupConnection program initialization");
@@ -62,16 +68,13 @@ impl Connector {
                 self.users_connections.insert(msg_source, vec![address]);
             }
         }
-
-        msg::send(msg_source, ConnectorHandleEvent::GroupConnectionCreated, 0)
-            .expect("Error in send GroupConnectionCreated");
     }
     fn add_user_to_group_connection(&mut self, user: ActorId) {
         let msg_source = msg::source();
 
         assert!(
             self.all_connections.contains(&msg_source),
-            "This connection was never created"
+            "This connection was never created by Me"
         );
 
         match self.users_connections.get_mut(&user) {
@@ -80,9 +83,6 @@ impl Connector {
                 self.users_connections.insert(user, vec![msg_source]);
             }
         }
-
-        msg::reply(ConnectorHandleEvent::AddedUserToGroupConnection, 0)
-            .expect("Error in reply AddedUserToGroupConnection");
     }
 }
 
@@ -105,10 +105,14 @@ unsafe extern "C" fn handle() {
     let connector = CONNECTOR.get_or_insert(Default::default());
 
     match action {
+        ConnectorHandleAction::RegisterPubKey { pubkey } => connector.register_pub_key(pubkey),
         ConnectorHandleAction::CreatePairConnetionWith { user } => {
             connector.create_pair_connection_with(user)
         }
-        ConnectorHandleAction::CreateGroupConnection => connector.create_group_connection(),
+
+        ConnectorHandleAction::CreateGroupConnection { encrypted_symkey } => {
+            connector.create_group_connection(encrypted_symkey)
+        }
         ConnectorHandleAction::AddUserToGroupConnection { user } => {
             connector.add_user_to_group_connection(user)
         }
@@ -119,6 +123,16 @@ unsafe extern "C" fn handle() {
 extern "C" fn state() {
     let connector: &Connector = unsafe { CONNECTOR.get_or_insert(Default::default()) };
     let connection_state = ConnectorState {
+        users_pubkeys: connector
+            .users_pubkeys
+            .iter()
+            .map(|(key, value)| (*key, value.clone()))
+            .collect(),
+        all_connections: connector
+            .all_connections
+            .iter()
+            .map(|value| *value)
+            .collect(),
         users_connections: connector
             .users_connections
             .iter()
@@ -126,10 +140,4 @@ extern "C" fn state() {
             .collect(),
     };
     msg::reply(&connection_state, 0).expect("Failed to share state");
-}
-
-#[no_mangle]
-extern "C" fn metahash() {
-    let metahash: [u8; 32] = include!("../.metahash");
-    msg::reply(metahash, 0).expect("Failed to share metahash");
 }

@@ -34,6 +34,7 @@ pub fn add(
     main_connector_program: &Program,
     adder: u64,
     user: u64,
+    encrypted_symkey: String,
 ) {
     let group_state_before_add: ConnectionState = group_connection_program
         .read_state()
@@ -42,8 +43,13 @@ pub fn add(
         .read_state()
         .expect("Error in reading state");
 
-    let run_res =
-        group_connection_program.send(adder, ConnectionHandleAction::Add { user: user.into() });
+    let run_res = group_connection_program.send(
+        adder,
+        ConnectionHandleAction::Add {
+            user: user.into(),
+            encrypted_symkey,
+        },
+    );
     assert!(!run_res.main_failed());
     assert!(!run_res.others_failed());
 
@@ -55,9 +61,10 @@ pub fn add(
         .expect("Error in reading state");
 
     let last_add_from_group_state = group_state_after_add
-        .users
+        .users_encrypted_symkeys
         .pop()
-        .expect("Eror during pop last add");
+        .expect("Eror during pop last add")
+        .0;
     let pos = main_state_after_add
         .users_connections
         .iter()
@@ -83,13 +90,16 @@ pub fn create_group_connection<'a, 'b>(
     sys: &'a System,
     main_connector_program: &'b Program,
     creator: u64,
+    encrypted_symkey: String,
 ) -> Program<'a> {
     let main_state_before: ConnectorState = main_connector_program
         .read_state()
         .expect("Error in reading state");
 
-    let run_res =
-        main_connector_program.send(creator, ConnectorHandleAction::CreateGroupConnection);
+    let run_res = main_connector_program.send(
+        creator,
+        ConnectorHandleAction::CreateGroupConnection { encrypted_symkey },
+    );
     assert!(!run_res.main_failed());
 
     let mut main_state_after: ConnectorState = main_connector_program
@@ -109,6 +119,8 @@ pub fn create_group_connection<'a, 'b>(
         .unwrap()
         .into();
 
+    main_state_after.all_connections.pop();
+
     if main_state_after.users_connections[pos].1.len() == 0 {
         main_state_after.users_connections.remove(pos);
     }
@@ -121,7 +133,14 @@ pub fn create_group_connection<'a, 'b>(
         .expect("Error in reading state");
 
     assert_eq!(group_state.messages, vec![]);
-    assert_eq!(group_state.users, vec![creator.into()]);
+    assert_eq!(
+        group_state
+            .users_encrypted_symkeys
+            .into_iter()
+            .map(|(key, value)| key)
+            .collect::<Vec<ActorId>>(),
+        vec![creator.into()]
+    );
 
     group_connection_program
 }

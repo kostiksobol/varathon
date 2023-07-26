@@ -12,24 +12,28 @@ fn add_user_to_group_connection_normal() {
         &group_programs[0],
         ACTOR[1],
         ACTOR[2],
+        "1".to_string(),
     );
     check::add_user_to_group_connection(
         &main_connector_program,
         &group_programs[0],
         ACTOR[2],
         ACTOR[3],
+        "2".to_string(),
     );
     check::add_user_to_group_connection(
         &main_connector_program,
         &group_programs[1],
         ACTOR[1],
         ACTOR[5],
+        "3".to_string(),
     );
     check::add_user_to_group_connection(
         &main_connector_program,
         &group_programs[2],
         ACTOR[2],
         ACTOR[5],
+        "4".to_string(),
     );
 }
 

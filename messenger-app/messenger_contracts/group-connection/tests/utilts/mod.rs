@@ -41,20 +41,26 @@ pub fn init_main_connector(sys: &System) -> Program {
 pub fn some_situation_for_testing(system: &System) -> (Program, Program) {
     let main_connector_program = init_main_connector(&system);
 
-    let group_connection_program =
-        check::create_group_connection(&system, &main_connector_program, ACTOR[0]);
+    let group_connection_program = check::create_group_connection(
+        &system,
+        &main_connector_program,
+        ACTOR[0],
+        "-1".to_string(),
+    );
 
     check::add(
         &group_connection_program,
         &main_connector_program,
         ACTOR[0],
         ACTOR[1],
+        "-2".to_string(),
     );
     check::add(
         &group_connection_program,
         &main_connector_program,
         ACTOR[0],
         ACTOR[2],
+        "-3".to_string(),
     );
 
     check::send(

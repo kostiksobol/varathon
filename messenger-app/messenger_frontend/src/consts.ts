@@ -6,8 +6,9 @@ const ADDRESS = {
 
 const LOCAL_STORAGE = {
   ACCOUNT: 'account',
+  WALLET: 'wallet',
 };
 
-const MAIN_CONTRACT_ADDRESS: HexString = '0xb7a08953ee1eaf08970196320fe29ebcdf28f3bfae2877ae36767367d6afbdd3'
+const MAIN_CONTRACT_ADDRESS: HexString = '0x907e91afc204f06e8ab0ea24b11bb8fb636317c1d46d7a9e4d01d35bf5283c0e'
 
 export { ADDRESS, LOCAL_STORAGE, MAIN_CONTRACT_ADDRESS };

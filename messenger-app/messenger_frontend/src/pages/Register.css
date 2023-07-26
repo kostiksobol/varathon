@@ -1,0 +1,70 @@
+/* Register.css */
+
+.register-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: #111;
+    color: #fff;
+    font-family: Arial, sans-serif;
+  }
+  
+  .register-button, .continue-button {
+    margin: 10px;
+    padding: 12px 24px;
+    font-size: 18px;
+    background-color: #3c3c3c;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .register-button:hover, .continue-button:hover {
+    background-color: #555;
+  }
+  
+  .registered-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .private-key-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 20px;
+    background-color: #222;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .private-key-content {
+    display: flex;
+    align-items: center;
+  }
+  
+  .private-key-content button {
+    margin-left: 10px;
+  }
+  
+  .copy-button {
+    padding: 8px 16px;
+    font-size: 14px;
+    background-color: #3c3c3c;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .copy-button:hover {
+    background-color: #555;
+  }
+  

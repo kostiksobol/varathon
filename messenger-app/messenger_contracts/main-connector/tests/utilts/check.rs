@@ -7,13 +7,16 @@ pub fn create_group_connection<'a, 'b>(
     sys: &'a System,
     main_connector_program: &'b Program,
     creator: u64,
+    encrypted_symkey: String,
 ) -> Program<'a> {
     let main_state_before: ConnectorState = main_connector_program
         .read_state()
         .expect("Error in reading state");
 
-    let run_res =
-        main_connector_program.send(creator, ConnectorHandleAction::CreateGroupConnection);
+    let run_res = main_connector_program.send(
+        creator,
+        ConnectorHandleAction::CreateGroupConnection { encrypted_symkey },
+    );
     assert!(!run_res.main_failed());
 
     let mut main_state_after: ConnectorState = main_connector_program
@@ -37,7 +40,10 @@ pub fn create_group_connection<'a, 'b>(
         main_state_after.users_connections.remove(pos);
     }
 
-    assert_eq!(main_state_before, main_state_after);
+    assert_eq!(
+        main_state_before.users_connections,
+        main_state_after.users_connections
+    );
 
     let group_connection_program = sys.get_program(last_connection_add_for_user_from_main_state);
 
@@ -49,6 +55,7 @@ pub fn add_user_to_group_connection(
     group_connection_program: &Program,
     adder: u64,
     user: u64,
+    encrypted_symkey: String,
 ) {
     let group_state_before_add: ConnectionState = group_connection_program
         .read_state()
@@ -57,8 +64,13 @@ pub fn add_user_to_group_connection(
         .read_state()
         .expect("Error in reading state");
 
-    let run_res =
-        group_connection_program.send(adder, ConnectionHandleAction::Add { user: user.into() });
+    let run_res = group_connection_program.send(
+        adder,
+        ConnectionHandleAction::Add {
+            user: user.into(),
+            encrypted_symkey,
+        },
+    );
     assert!(!run_res.main_failed());
     assert!(!run_res.others_failed());
 
@@ -70,9 +82,10 @@ pub fn add_user_to_group_connection(
         .expect("Error in reading state");
 
     let last_add_from_group_state = group_state_after_add
-        .users
+        .users_encrypted_symkeys
         .pop()
-        .expect("Eror during pop last add");
+        .expect("Eror during pop last add")
+        .0;
     let pos = main_state_after_add
         .users_connections
         .iter()
