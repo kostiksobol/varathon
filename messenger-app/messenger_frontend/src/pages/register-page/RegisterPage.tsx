@@ -1,41 +1,15 @@
 import { useAccount, useSendMessage } from '@gear-js/react-hooks';
 import { MAIN_CONTRACT_ADDRESS } from 'consts';
 import {useEffect, useState} from 'react'
-import { useMetadata } from './useMetadata';
-import metaMainConnectorTxt from 'assets/meta/main_connector.meta.txt'
-import { useMainState } from './Main';
 import { useNavigate } from 'react-router-dom';
 
-import './Register.css';
+import metaMainConnectorTxt from 'assets/meta/main_connector.meta.txt'
 
-var forge = require('node-forge');
-// var cryptico = require('cryptico');
-
-const getRegisterPubKeyPayload = (pubkey: string) => {
-  return { RegisterPubkey: { pubkey } };
-}
-
-// Function to generate an RSA key pair and return keys as strings
-function generateKeyPair(): { publicKey: string; privateKey: string } {
-  const keyPair = forge.pki.rsa.generateKeyPair({ bits: 512, e: 0x10001 });
-
-  const publicKeyBase64 = forge.pki.publicKeyToPem(keyPair.publicKey);
-  const privateKeyBase64 = forge.pki.privateKeyToPem(keyPair.privateKey);
-
-  return {
-    publicKey: publicKeyBase64,
-    privateKey: privateKeyBase64,
-  };
-}
-
-// function generateKeyPair() {
-//   const key = cryptico.generateRSAKey(1024, '10001');
-//   return {
-//     privateKey: key.toPrivatePem('base64'),
-//     publicKey: key.toPublicPem('base64') 
-//   };
-// }
-
+import './RegisterPage.css';
+import { useMainState } from 'hooks';
+import { useMetadata } from 'hooks/useMetadata';
+import { getRegisterPubKeyPayload } from 'utils/payloads/main-connector-payloads';
+import { generateKeyPair } from 'utils/crypto-defence/public-private-key-encryption';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -49,29 +23,25 @@ export default function Register() {
 
   const { state: pubkey } = useMainState<string>('get_user_pubkey', account?.decodedAddress);
 
-  const lalala = useSendMessage(MAIN_CONTRACT_ADDRESS, useMetadata(metaMainConnectorTxt));
+  const sendMessageToMainContract = useSendMessage(MAIN_CONTRACT_ADDRESS, useMetadata(metaMainConnectorTxt));
 
   const handleClickRegisterButton = () => {
     const {publicKey, privateKey} = generateKeyPair();
-    // console.log(publicKey);
-    lalala(getRegisterPubKeyPayload(publicKey));
+    sendMessageToMainContract(getRegisterPubKeyPayload(publicKey));
     Setprivkey(privateKey);
   }
 
   useEffect(() => {
     if(pubkey !== undefined){
-      if(pubkey.length > 50){
-        console.log(pubkey);
-        if(addr && privkey){
-          localStorage.setItem(addr, privkey);
-          setIsRegister(true);
-        }
+      if(pubkey.length > 50 && addr && privkey){
+        localStorage.setItem(addr, privkey);
+        setIsRegister(true);
       }
     }
   }, [pubkey]);
 
   const handleClickContinueButton = () => {
-    navigate(`/${account?.meta.name}`);
+    navigate(`/`);
   }
 
   const handleCopyPrivateKey = () => {
