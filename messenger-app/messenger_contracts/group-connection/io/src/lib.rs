@@ -45,7 +45,7 @@ pub struct ConnectionState {
     pub messages: Vec<Message>,
 }
 
-#[derive(Debug, Encode, Decode, TypeInfo, Clone, PartialEq, Eq)]
+#[derive(Debug, Encode, Decode, TypeInfo, Clone, PartialEq, Eq, Default)]
 pub struct Message {
     pub from: ActorId,
     pub encrypted_content: String,

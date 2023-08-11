@@ -34,7 +34,7 @@ export default function ChatsForm() {
     return (
       <div
         style={{
-          width: '40%',
+          width: '30%',
           borderRight: '1px solid #555',
           backgroundColor: '#222',
           overflowY: 'auto',

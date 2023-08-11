@@ -20,37 +20,45 @@ impl Connection {
     fn add(&mut self, user: ActorId, encrypted_symkey: String) {
         let msg_source = msg::source();
 
-        assert!(self.users_encrypted_symkeys.contains_key(&msg_source), "You are not allowed to do that");
+        assert!(
+            self.users_encrypted_symkeys.contains_key(&msg_source),
+            "You are not allowed to do that"
+        );
 
-        self.users_encrypted_symkeys.try_insert(user, encrypted_symkey).expect("Such person is already in the chat");
+        self.users_encrypted_symkeys
+            .try_insert(user, encrypted_symkey)
+            .expect("Such person is already in the chat");
 
-        msg::send_with_gas(
-            self.main_connector_id,
-            main_connector_io::ConnectorHandleAction::AddUserToGroupConnection { user },
-            1_000_000_000,
-            0,
-        )
-        .expect("Error in send AddUserToGroupConnection'");
-
-        // msg::send(
+        // msg::send_with_gas(
         //     self.main_connector_id,
         //     main_connector_io::ConnectorHandleAction::AddUserToGroupConnection { user },
+        //     1_000_000_000,
         //     0,
         // )
-        // .expect("Error in send AddUserToGroupConnection");
+        // .expect("Error in send AddUserToGroupConnection'");
+
+        msg::send(
+            self.main_connector_id,
+            main_connector_io::ConnectorHandleAction::AddUserToGroupConnection { user },
+            0,
+        )
+        .expect("Error in send AddUserToGroupConnection");
     }
     fn send(&mut self, encrypted_content: String) {
         let msg_source = msg::source();
 
-        assert!(self.users_encrypted_symkeys.contains_key(&msg_source), "#You are not allowed to do that#");
+        assert!(
+            self.users_encrypted_symkeys.contains_key(&msg_source),
+            "#You are not allowed to do that#"
+        );
 
-        let message = Message {
+        let mut message = Message {
             from: msg_source,
             encrypted_content,
             timestamp: exec::block_timestamp(),
         };
 
-        self.messages.push(message.clone());
+        self.messages.push(gstd::mem::take(&mut message));
     }
 }
 
@@ -73,17 +81,24 @@ unsafe extern "C" fn handle() {
     let connection = CONNECTION.get_or_insert(Default::default());
 
     match action {
-        ConnectionHandleAction::Add { user, encrypted_symkey } => connection.add(user, encrypted_symkey),
+        ConnectionHandleAction::Add {
+            user,
+            encrypted_symkey,
+        } => connection.add(user, encrypted_symkey),
         ConnectionHandleAction::Send { encrypted_content } => connection.send(encrypted_content),
     };
 }
 
 #[no_mangle]
 extern "C" fn state() {
-    let connection: &Connection = unsafe { CONNECTION.get_or_insert(Default::default()) };
+    let connection: &mut Connection = unsafe { CONNECTION.get_or_insert(Default::default()) };
     let connection_state = ConnectionState {
-        users_encrypted_symkeys: connection.users_encrypted_symkeys.iter().map(|(key, value)| (*key, value.clone())).collect(),
-        messages: connection.messages.iter().cloned().collect(),
+        users_encrypted_symkeys: connection
+            .users_encrypted_symkeys
+            .iter_mut()
+            .map(|(key, value)| (*key, gstd::mem::take(value)))
+            .collect(),
+        messages: gstd::mem::take(&mut connection.messages),
     };
     msg::reply(&connection_state, 0).expect("Failed to share state");
 }

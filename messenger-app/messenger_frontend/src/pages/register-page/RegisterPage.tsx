@@ -41,7 +41,7 @@ export default function Register() {
   }, [pubkey]);
 
   const handleClickContinueButton = () => {
-    navigate(`/`);
+    navigate(`/${account?.meta.name}`);
   }
 
   const handleCopyPrivateKey = () => {

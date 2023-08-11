@@ -12,7 +12,7 @@ import AddNewUserForm from './UI/AddNewUserForm';
 import { decryptDataWithPrivKey, encryptDataWithPubKey } from 'utils/crypto-defence/public-private-key-encryption';
 import { getAddNewUserToGroupPayload } from 'utils/payloads/group-connection-payloads';
 import { ChatIds_SymKeys_Context, gearApiContext } from 'context';
-import { useReadMainStateOnce } from 'hooks/api';
+import { ReadMainState, useReadMainStateOnce } from 'hooks/api';
 
 export default function UsersForm() {
   const params = useParams<{ id: HexString }>();
@@ -26,39 +26,78 @@ export default function UsersForm() {
 
   const addUserMessage = useSendMessage(chat_id, useMetadata(metaGroupConnectionTxt));
 
-  const [addUser, setAddUser] = useState<HexString>();
-  const add_user_pubkey = useReadMainStateOnce<string>(api, 'get_user_pubkey', addUser);
-  const [clickCounter, setClickCounter] = useState(0);
+  // const [addUser, setAddUser] = useState<HexString>();
+  // const add_user_pubkey = useReadMainStateOnce<string>(api, 'get_user_pubkey', addUser);
+  // const [clickCounter, setClickCounter] = useState(0);
 
-  useEffect(() => {
-      if(symKey && add_user_pubkey && addUser){
-          try{
-            const encrypted_symkey = encryptDataWithPubKey(add_user_pubkey, symKey);
-            addUserMessage(getAddNewUserToGroupPayload(addUser, encrypted_symkey)); 
-          }
-          catch{
-            console.log('The user is not registered');
-          }
-      }
-  }, [clickCounter, add_user_pubkey, addUser])
+  // useEffect(() => {
+  //     if(symKey && add_user_pubkey && addUser){
+  //         try{
+  //           setShowNotification(false);
+  //           const encrypted_symkey = encryptDataWithPubKey(add_user_pubkey, symKey);
+  //           addUserMessage(getAddNewUserToGroupPayload(addUser, encrypted_symkey)); 
+  //         }
+  //         catch{
+  //           setShowNotification(true);
+  //           setTimeout(() => {
+  //             setShowNotification(false);
+  //           }, 2000);
+  //         }
+  //     }
+  // }, [clickCounter, add_user_pubkey, addUser])
+  const [showNotification, setShowNotification] = useState(false);
 
   function handleAddUserClick(newUser: HexString){
       return () => {
-        setAddUser(newUser);
-        setClickCounter((prevValue) => (prevValue + 1));
+        // setAddUser(newUser);
+        // setClickCounter((prevValue) => (prevValue + 1));
+        // setShowNotification(false);
+        if(api){
+          ReadMainState<string>(api, 'get_user_pubkey', newUser).then((add_pub_key) => {
+            if(symKey){
+              setShowNotification(false);
+              const encrypted_symkey = encryptDataWithPubKey(add_pub_key, symKey);
+              addUserMessage(getAddNewUserToGroupPayload(newUser, encrypted_symkey)); 
+            }
+          })
+          .catch((err) => {
+            setShowNotification(true);
+            setTimeout(() => {
+              setShowNotification(false);
+            }, 2000);
+          });
+        }
       }
   }
     
+  
   return (
     <div
     style={{
-      padding: '1rem',
+      padding: '0.5rem',
       backgroundColor: '#222',
     }}
     >
       {users?.map((user, index) => (
         <UserForm key={index} address={user} />
       ))}
+        {showNotification && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '20px',
+            left: '20px',
+            backgroundColor: '#222',
+            color: 'white',
+            padding: '10px',
+            borderRadius: '5px',
+            fontSize: '20px',
+            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)',
+          }}
+        >
+          User is not registered
+        </div>
+      )}
       <div><AddNewUserForm handleAddUserClick={handleAddUserClick}/></div>
     </div>
   )

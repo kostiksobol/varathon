@@ -33,19 +33,19 @@ export default function MainLayer() {
     useEffect(() => {
         if(myPubKey){
           if(myPubKey.length < 50){
-              navigate(`/register`, {replace: true});
+              navigate(`/${account?.meta.name}/register`, {replace: true});
           }
           else{
             const addr = account?.address;
             if(addr){
               const privkey = localStorage.getItem(addr);
               if(!privkey){
-                navigate(`/login`, {replace: true});
+                navigate(`/${account.meta.name}/login`, {replace: true});
               }
             }
           }
         }
-    }, [myPubKey]);
+    }, [myPubKey, account]);
     
   return (
     <ChatIds.Provider value={chat_ids}>
@@ -54,7 +54,7 @@ export default function MainLayer() {
           <div
             style={{
               display: 'flex',
-              height: '100vh',
+              height: '85vh',
               fontFamily: 'Arial, sans-serif',
               backgroundColor: '#333',
               color: '#fff',

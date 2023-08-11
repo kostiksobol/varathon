@@ -23,8 +23,6 @@ function useProgramMetadata(source: string) {
       .then((metaHex) => getProgramMetadata(metaHex))
       .then((result) => setMetadata(result))
       .catch(({ message }: Error) => alert.error(message));
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return metadata;
@@ -42,8 +40,6 @@ function useStateMetadata(source: string) {
       .then((buffer) => getStateMetadata(buffer))
       .then((result) => setStateMetadata(result))
       .catch(({ message }: Error) => alert.error(message));
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return stateMetadata;
@@ -94,6 +90,23 @@ function useReadMainStateOnce<T>(api: GearApi | null, functionName: string, payl
   }, [functionName, payload, buffer, stateMetadata]);
 
   return state;
+}
+
+async function ReadMainState<T>(api: GearApi, functionName: string, payload?: any){
+  const res = await fetch(stateMainConnectorMetaWasm);
+  const arrayBuffer = await res.arrayBuffer();
+  const buffer = await Buffer.from(arrayBuffer);
+  const metadata = await getStateMetadata(buffer);
+  const state = await api.programState.readUsingWasm(
+    {
+      programId: MAIN_CONTRACT_ADDRESS,
+      fn_name: functionName,
+      wasm: buffer,
+      argument: payload,
+    },
+    metadata,
+  );
+  return state.toHuman() as unknown as T;
 }
 
 function useReadGroupStateOnce<T>(api: GearApi | null, functionName: string, programId: HexString, payload?: any) {
@@ -177,4 +190,4 @@ function useReadGroupStatesOnce<T, K>(
   return stateMap;
 }
 
-export { useProgramMetadata, useStateMetadata, useGroupState, useMainState, useReadMainStateOnce, useReadGroupStateOnce, useReadGroupStatesOnce };
+export { useProgramMetadata, useStateMetadata, useGroupState, useMainState, useReadMainStateOnce, useReadGroupStateOnce, useReadGroupStatesOnce, ReadMainState };

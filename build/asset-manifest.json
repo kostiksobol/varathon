@@ -1,0 +1,41 @@
+{
+  "files": {
+    "main.css": "/static/css/main.e19027d7.css",
+    "main.js": "/static/js/main.f3e40ec5.js",
+    "static/media/bg.svg": "/static/media/bg.2dac6348c2052db783cf.svg",
+    "static/media/group_connection_state.meta.wasm": "/static/media/group_connection_state.meta.d69b10d8c795e5b51045.wasm",
+    "static/media/main_connector_state.meta.wasm": "/static/media/main_connector_state.meta.4b5eb92ab7105ec92c74.wasm",
+    "static/media/kanit-600.woff2": "/static/media/kanit-600.a2adb8f7c067494c0225.woff2",
+    "static/media/kanit-400.woff2": "/static/media/kanit-400.30d596e48610ef7e8932.woff2",
+    "static/media/kanit-700.woff2": "/static/media/kanit-700.4dceb6226434e96dc4e1.woff2",
+    "static/media/kanit-500.woff2": "/static/media/kanit-500.63d399e480c6301efad7.woff2",
+    "static/media/kanit-300.woff2": "/static/media/kanit-300.0c9e7f70b1047dcfa949.woff2",
+    "static/media/poppins-600.woff2": "/static/media/poppins-600.91145014c0350c248ed2.woff2",
+    "static/media/poppins-400.woff2": "/static/media/poppins-400.405055dd680fa1dcdfa2.woff2",
+    "static/media/poppins-300.woff2": "/static/media/poppins-300.39576fe9df8a22cc1bcc.woff2",
+    "static/media/poppins-700.woff2": "/static/media/poppins-700.d86662fe776dae29ea78.woff2",
+    "static/media/poppins-500.woff2": "/static/media/poppins-500.08491d3f7fe7ae88ef44.woff2",
+    "static/media/subwallet.svg": "/static/media/subwallet.40bfefeba930b15145e274f2438efa1a.svg",
+    "static/media/copy.svg": "/static/media/copy.b46ac352e63c2f933d129e045a316a29.svg",
+    "static/media/polkadot.svg": "/static/media/polkadot.93a07426c283514ea039e516700d6371.svg",
+    "static/media/logo.svg": "/static/media/logo.ef761e14922311cc085c15a83c563d43.svg",
+    "static/media/talisman.svg": "/static/media/talisman.1ba84313866b0e725cb017f52e7a798d.svg",
+    "static/media/main_connector.meta.txt": "/static/media/main_connector.meta.aee467fea32024c23309.txt",
+    "static/media/gear.svg": "/static/media/gear.d1bda9569a9840e95db3.svg",
+    "static/media/discord.svg": "/static/media/discord.526ab74eaf7406bd14b2ea524b1690fb.svg",
+    "static/media/exit.svg": "/static/media/exit.45f47fc73e0fe7dd05cf7f2d41e38299.svg",
+    "static/media/group_connection.meta.txt": "/static/media/group_connection.meta.e7cb3daf156186a9b4f2.txt",
+    "static/media/enkrypt.svg": "/static/media/enkrypt.6b5c97ebd40ad442b27a2db1e4c9a2f3.svg",
+    "static/media/github.svg": "/static/media/github.d27d86883a60bd746f8cbed0515442c4.svg",
+    "static/media/twitter.svg": "/static/media/twitter.21e10f6b8e647ce1f27e42a8d0ad31a8.svg",
+    "static/media/wallet.svg": "/static/media/wallet.83faee0c5e3d4c4d0672944c68950cff.svg",
+    "static/media/medium.svg": "/static/media/medium.a55230a9a6d6d31159680e98d0161368.svg",
+    "index.html": "/index.html",
+    "main.e19027d7.css.map": "/static/css/main.e19027d7.css.map",
+    "main.f3e40ec5.js.map": "/static/js/main.f3e40ec5.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e19027d7.css",
+    "static/js/main.f3e40ec5.js"
+  ]
+}

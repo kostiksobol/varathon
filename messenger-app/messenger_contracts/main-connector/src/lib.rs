@@ -21,6 +21,7 @@ impl Connector {
             .expect("You have already been registered");
     }
     fn create_pair_connection_with(&mut self, user: ActorId) {
+        panic!("not implemented");
         let user1 = msg::source();
         let user2 = user;
 
@@ -121,12 +122,12 @@ unsafe extern "C" fn handle() {
 
 #[no_mangle]
 extern "C" fn state() {
-    let connector: &Connector = unsafe { CONNECTOR.get_or_insert(Default::default()) };
+    let connector: &mut Connector = unsafe { CONNECTOR.get_or_insert(Default::default()) };
     let connection_state = ConnectorState {
         users_pubkeys: connector
             .users_pubkeys
-            .iter()
-            .map(|(key, value)| (*key, value.clone()))
+            .iter_mut()
+            .map(|(key, value)| (*key, gstd::mem::take(value)))
             .collect(),
         all_connections: connector
             .all_connections
@@ -135,8 +136,8 @@ extern "C" fn state() {
             .collect(),
         users_connections: connector
             .users_connections
-            .iter()
-            .map(|(key, value)| (*key, value.clone()))
+            .iter_mut()
+            .map(|(key, value)| (*key, gstd::mem::take(value)))
             .collect(),
     };
     msg::reply(&connection_state, 0).expect("Failed to share state");

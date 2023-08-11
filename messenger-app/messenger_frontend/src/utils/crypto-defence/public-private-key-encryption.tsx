@@ -35,6 +35,15 @@ export function decryptDataWithPrivKey(privateKey: string, encryptedData: string
   return decrypted
 }
 
+export function checkCorrectPrivateAndPublicKeys(privateKeyPem: string, providedPublicKeyPem: string): boolean {
+    const privateKey = forge.pki.privateKeyFromPem(privateKeyPem);
+    const providedPublicKey = forge.pki.publicKeyFromPem(providedPublicKeyPem);
+    const data = "This is some data to encrypt";
+    const encryptedData = providedPublicKey.encrypt(data);
+    const decryptedData = privateKey.decrypt(encryptedData);
+    return data === decryptedData;
+}
+
 export function fuckDecryptDataWithPrivKey(privateKey: string, encryptedData: string): string {
   const rsaPrivateKey = forge.pki.privateKeyFromPem(privateKey);
 

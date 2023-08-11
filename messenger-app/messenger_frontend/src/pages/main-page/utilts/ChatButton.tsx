@@ -1,4 +1,5 @@
 import { HexString } from "@gear-js/api";
+import { useAccount } from "@gear-js/react-hooks";
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -11,8 +12,9 @@ export function ChatButton({chat_id}: ChatButtonProps){
     const params = useParams<{ id: HexString }>();
     const selectedChatId = params.id!;
 
+    const {account} = useAccount();
     const onClick = React.useCallback(() => {
-        navigate(`/${chat_id}`, {replace: true});
+        navigate(`/${account?.meta.name}/chat/${chat_id}`, {replace: true});
     }, [navigate, chat_id]);
 
     return (

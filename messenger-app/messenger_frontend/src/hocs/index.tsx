@@ -6,7 +6,7 @@ import {
 } from '@gear-js/react-hooks';
 import { Alert, alertStyles } from '@gear-js/ui';
 import { ComponentType } from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, HashRouter } from 'react-router-dom';
 import { ADDRESS } from 'consts';
 
 function ApiProvider({ children }: ProviderProps) {
@@ -21,7 +21,7 @@ function AlertProvider({ children }: ProviderProps) {
   );
 }
 
-const providers = [BrowserRouter, AlertProvider, ApiProvider, AccountProvider];
+const providers = [HashRouter, AlertProvider, ApiProvider, AccountProvider];
 
 function withProviders(Component: ComponentType) {
   return () => providers.reduceRight((children, Provider) => <Provider>{children}</Provider>, <Component />);

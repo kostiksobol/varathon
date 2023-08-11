@@ -1,5 +1,5 @@
 import { HexString } from "@gear-js/api";
-import { useAccount, useSendMessage } from "@gear-js/react-hooks";
+import { useAccount, useSendMessage, ApiProvider } from "@gear-js/react-hooks";
 import { useGroupState } from "hooks";
 import { useParams } from "react-router-dom";
 import { Message, MessageForm } from "./utilts/MessageForm";
@@ -38,29 +38,15 @@ export function MessagesForm(){
         }
     }
 
-    // const messagesFormContainerRef = useRef<HTMLDivElement>(null);
-
-    // useEffect(() => {
-    //   scrollToBottom();
-    // }, [messages]);
-  
-    // const scrollToBottom = () => {
-    //   if (messagesFormContainerRef.current) {
-    //     const container = messagesFormContainerRef.current;
-    //     container.scrollTop = container.scrollHeight;
-    //   }
-    // };
-
     return (
         <div >
             <div
             style={{
-            paddingRight: '2rem',
+            paddingRight: '0.5rem',
             backgroundColor: '#222',
-            height: "78vh",
+            height: "63vh",
             overflowY: "auto",
             }}
-            // ref={messagesFormContainerRef}
             >
                 {messages?.map((message, index) => (
                     symKey && <MessageForm key={index} message={message} symKey={symKey}/>
