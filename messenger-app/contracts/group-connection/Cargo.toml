@@ -1,0 +1,28 @@
+[package]
+name = "group-connection"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+gstd.workspace = true
+gmeta.workspace = true
+
+scale-info.workspace = true
+parity-scale-codec.workspace = true
+hashbrown.workspace = true
+
+group-connection-io.workspace = true
+main-connector-io.workspace = true
+
+[build-dependencies]
+gear-wasm-builder.workspace = true
+gmeta.workspace = true
+
+group-connection-io.workspace = true
+main-connector-io.workspace = true
+
+[dev-dependencies]
+gtest.workspace = true
+gstd = { workspace = true, features = ["debug"] }
