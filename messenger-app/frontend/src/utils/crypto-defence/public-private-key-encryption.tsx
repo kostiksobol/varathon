@@ -2,7 +2,7 @@ var forge = require('node-forge');
 
 // Function to generate an RSA key pair and return keys as strings
 export function generateKeyPair(): { publicKey: string; privateKey: string } {
-  const keyPair = forge.pki.rsa.generateKeyPair({ bits: 512, e: 0x10001 });
+  const keyPair = forge.pki.rsa.generateKeyPair({ bits: 1024, e: 0x10001 });
 
   const publicKeyBase64 = forge.pki.publicKeyToPem(keyPair.publicKey);
   const privateKeyBase64 = forge.pki.privateKeyToPem(keyPair.privateKey);

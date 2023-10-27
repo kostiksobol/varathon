@@ -114,7 +114,7 @@
 
 import { HexString } from "@gear-js/api";
 import { useEffect, useState } from "react";
-import { User, db, getUserByAddress } from "utils/indexedDB";
+import { User, db, getFilesByMessageId, getUserByAddress } from "utils/indexedDB";
 
 const styles = {
   messageContainer: {
@@ -138,7 +138,7 @@ const styles = {
     marginTop: '20px',
     padding: '10px 20px',
     fontSize: '16px',
-    backgroundColor: '#61dafb',
+    backgroundColor: '#4A90E2',
     color: 'white',
     borderRadius: '5px',
     cursor: 'pointer',
@@ -159,6 +159,14 @@ export type IpfsFile = {
   hashipfs: string;
 }
 
+export type IpfsFileWithRealFile = {
+  name: string;
+  tip: string;
+  sizet: string;
+  hashipfs: string;
+  real_file: File;
+}
+
 export type Message = {
   from: HexString;
   encryptedContent: string;
@@ -166,30 +174,54 @@ export type Message = {
   timestamp: number;
 };
 
+export type MessageWithRealFile = {
+  from: HexString;
+  encryptedContent: string;
+  files: IpfsFileWithRealFile[];
+  timestamp: number;
+};
+
 type MessageFormProps = {
-  message: Message;
+  message: MessageWithRealFile;
 };
 
 type FileInfoProps = {
-  file: IpfsFile;
+  file: IpfsFileWithRealFile;
 };
 
 const FileInfo: React.FC<FileInfoProps> = ({ file }) => {
-  const ipfsLink = `http://ipfs.io/ipfs/${file.hashipfs}`;
   const isImage = ['image/jpeg', 'image/png', 'image/gif'].includes(file.tip);
+  const fileURL = URL.createObjectURL(file.real_file);
 
   return (
     <div 
       style={styles.fileInfo} 
-      onClick={() => window.open(ipfsLink, "_blank")}
+      // onClick={() => window.open(fileURL, "_blank")}
     >
       <p><strong>File Name:</strong> {file.name}</p>
       <p><strong>File Size:</strong> {file.sizet} bytes</p>
       {isImage && (
         <div>
-          <img src={ipfsLink} alt="Uploaded content" style={{ maxWidth: '100%', maxHeight: '200px' }} />
+          <img src={URL.createObjectURL(file.real_file)} alt="Uploaded content" style={{ maxWidth: '100%', maxHeight: '200px' }} />
         </div>
       )}
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+  <a 
+    onClick={() => window.open(fileURL, "_blank")}
+    style={{ ...styles.button, flex: 1, marginRight: '5px' }} // Added flex: 1 and a small marginRight for spacing
+  >
+    Open
+  </a>
+  
+  <a 
+    href={fileURL} 
+    download={file.name} 
+    style={{ ...styles.button, flex: 1, marginLeft: '5px' }} // Added flex: 1 and a small marginLeft for spacing
+  >
+    Download
+  </a>
+</div>
+
     </div>
   );
 };
@@ -241,7 +273,9 @@ export function MessageForm({message}: MessageFormProps){
           Number(message.timestamp.toString().replace(/,/g, ''))
         ).toLocaleString()}
       </div>
-      {message.files.map((file, index) => (<FileInfo key={index} file={file}/>))}
+      {message.files?.map((file, index) => (
+          <FileInfo key={index} file={file} />
+        ))}
     </div>
   );
 }

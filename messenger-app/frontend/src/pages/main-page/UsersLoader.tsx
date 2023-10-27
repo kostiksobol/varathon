@@ -1,7 +1,7 @@
 import { HexString } from '@gear-js/api';
 import React, { useEffect, useMemo, useState } from 'react'
 import { Message } from './utilts/MessageForm';
-import { db, getMessagesByChatId, getSymmetricKeyByChatId, getUsersByChatId } from 'utils/indexedDB';
+import { db, getSymmetricKeyByChatId, getUsersByChatId } from 'utils/indexedDB';
 import GetMessages from './GetMessages';
 import GetUsers from './GetUsers';
 

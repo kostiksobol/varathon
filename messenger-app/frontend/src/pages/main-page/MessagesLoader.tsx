@@ -1,18 +1,18 @@
 import { HexString } from '@gear-js/api';
 import React, { useEffect, useMemo, useState } from 'react'
 import { Message } from './utilts/MessageForm';
-import { db, getMessagesByChatId, getSymmetricKeyByChatId } from 'utils/indexedDB';
+import { db, getMessageCountForChatId, getSymmetricKeyByChatId } from 'utils/indexedDB';
 import GetMessages from './GetMessages';
 
 export default function MessagesLoader({chatId}: {chatId: HexString}) {
     const [lastLength, setLastLength] = useState<number>(0);
-    const [symKey, setSymKey] = useState<string>();
+    const [symKey, setSymKey] = useState<CryptoKey>();
 
     const [dataLoaded, setDataLoaded] = useState(false);
     useEffect(() => {
-        getMessagesByChatId(chatId)
-        .then(allMessages => {
-            setLastLength(allMessages.length);
+        getMessageCountForChatId(chatId)
+        .then(length => {
+            setLastLength(length);
             setDataLoaded(true);
         })
         .catch(error => {

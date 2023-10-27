@@ -1,46 +1,134 @@
-var CryptoJS = require('crypto-js');
-import * as fs from 'fs';
+import { Buffer } from 'buffer';
 
-// Function to generate a random symmetric key
-export function generateSymmetricKey(): string {
-  return CryptoJS.lib.WordArray.random(32 / 8).toString();
+// Utility function to convert a Uint8Array to a base64 string.
+function bufferToBase64(buffer: Uint8Array): string {
+  return Buffer.from(buffer).toString('base64');
 }
 
-// Function to encrypt data using a symmetric key
-export function encryptData(data: string, key: string): string {
-  const a =  CryptoJS.AES.encrypt(data, key).toString();
-  return a;
+// Utility function to convert a base64 string to a Uint8Array.
+function base64ToBuffer(base64: string): Uint8Array {
+  return new Uint8Array(Buffer.from(base64, 'base64'));
 }
 
-// Function to decrypt data using a symmetric key
-export function decryptData(encryptedData: string, key: string): string {
-  try {
-    const decryptedData = CryptoJS.AES.decrypt(encryptedData, key).toString(CryptoJS.enc.Utf8);
-    return decryptedData;
-  } catch (error) {
-    return '';
-  }
+export async function symmetricKeyToString(key: CryptoKey): Promise<string> {
+  const keyBuffer = await crypto.subtle.exportKey('raw', key);
+  return bufferToBase64(new Uint8Array(keyBuffer));
 }
 
-export async function readAsText(file: File): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
+const SYMKEY_SIZE_IN_BYTES = 16;
 
-    reader.onload = (event) => {
-      if (event.target && typeof event.target.result === 'string') {
-        resolve(event.target.result);
-      } else {
-        reject(new Error('Failed to read file'));
-      }
-    };
+export async function stringToSymmetricKey(str: string): Promise<CryptoKey> {
+  const keyBuffer = base64ToBuffer(str);
 
-    reader.onerror = (error) => {
-      reject(error);
-    };
+  const key = await crypto.subtle.importKey('raw', keyBuffer, {
+    name: 'AES-GCM',
+    length: SYMKEY_SIZE_IN_BYTES * 8
+  }, true, ['encrypt', 'decrypt']);
 
-    reader.readAsText(file);
-  });
+  return key;
 }
+
+export async function createSymmetricKey(): Promise<CryptoKey> {
+  const keyData = window.crypto.getRandomValues(new Uint8Array(SYMKEY_SIZE_IN_BYTES));
+  const key = await crypto.subtle.importKey(
+    'raw',
+    keyData,
+    { name: 'AES-GCM' },
+    true,
+    ['encrypt', 'decrypt']
+  );
+  return key;
+}
+
+const IV_LENGTH = 12;
+
+export async function encryptText(text: string, symmetricKey: CryptoKey): Promise<string> {
+    const iv = window.crypto.getRandomValues(new Uint8Array(IV_LENGTH));
+    const encoder = new TextEncoder();
+    const encodedText = encoder.encode(text);
+
+    const encryptedBuffer = await window.crypto.subtle.encrypt(
+        { name: 'AES-GCM', iv: iv, tagLength: 128 },
+        symmetricKey,
+        encodedText
+    );
+
+    const combinedBuffer = new Uint8Array(IV_LENGTH + encryptedBuffer.byteLength);
+    combinedBuffer.set(iv);
+    combinedBuffer.set(new Uint8Array(encryptedBuffer), IV_LENGTH);
+    
+    return bufferToBase64(combinedBuffer);
+}
+
+export async function decryptText(encryptedText: string, symmetricKey: CryptoKey): Promise<string> {
+    const combinedBuffer = base64ToBuffer(encryptedText);
+    const iv = combinedBuffer.slice(0, IV_LENGTH);
+
+    const encryptedData = combinedBuffer.slice(IV_LENGTH);
+
+    const decryptedBuffer = await window.crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv: iv, tagLength: 128 },
+        symmetricKey,
+        encryptedData
+    );
+    
+    const decoder = new TextDecoder();
+    return decoder.decode(decryptedBuffer);
+}
+
+export async function encryptFile(file: File, symmetricKey: CryptoKey): Promise<Blob> {
+  const iv = window.crypto.getRandomValues(new Uint8Array(IV_LENGTH));
+  const fileData = await file.arrayBuffer();
+  const encryptedDataBuffer = await window.crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv: iv },
+    symmetricKey,
+    fileData
+  );
+
+  const combinedBuffer = new Uint8Array(IV_LENGTH + encryptedDataBuffer.byteLength);
+  combinedBuffer.set(iv);
+  combinedBuffer.set(new Uint8Array(encryptedDataBuffer), IV_LENGTH);
+
+  return new Blob([combinedBuffer], { type: file.type });
+}
+
+export async function decryptFile(encryptedBlob: Blob, symmetricKey: CryptoKey, type: string): Promise<File> {
+  const encryptedDataWithIv = await encryptedBlob.arrayBuffer();
+  const iv = encryptedDataWithIv.slice(0, IV_LENGTH);
+  const encryptedData = encryptedDataWithIv.slice(IV_LENGTH);
+
+  const decryptedData = await window.crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv: new Uint8Array(iv) },
+    symmetricKey,
+    encryptedData
+  );
+
+  const blob = new Blob([decryptedData], { type: encryptedBlob.type });
+  return new File([blob], `decrypted_file`, { type: type });
+}
+
+
+
+
+// export async function readAsText(file: File): Promise<string> {
+//   return new Promise<string>((resolve, reject) => {
+//     const reader = new FileReader();
+
+//     reader.onload = (event) => {
+//       if (event.target && typeof event.target.result === 'string') {
+//         resolve(event.target.result);
+//       } else {
+//         reject(new Error('Failed to read file'));
+//       }
+//     };
+
+//     reader.onerror = (error) => {
+//       reject(error);
+//     };
+
+//     reader.readAsText(file);
+//   });
+// }
 
 // export async function encryptFile(inputFile: File, encryptionKey: string): Promise<File> {
 //   try {

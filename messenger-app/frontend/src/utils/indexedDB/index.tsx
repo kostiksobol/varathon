@@ -1,18 +1,18 @@
 import { HexString } from '@gear-js/api';
 import Dexie from 'dexie';
-import { IpfsFile } from 'pages/main-page/utilts/MessageForm';
+import { IpfsFile, IpfsFileWithRealFile, Message } from 'pages/main-page/utilts/MessageForm';
 
 class MessengerDB extends Dexie {
-    chats: Dexie.Table<IChat, number>;  // Using string as the primary key type (chatId)
-    messages: Dexie.Table<IMessage, number>;  // Using number (autoIncrement)
+    chats: Dexie.Table<IChat, number>; 
+    messages: Dexie.Table<IMessage, number>; 
     users: Dexie.Table<IUser, number>;
 
     constructor() {
         super("MessengerDB");
 
         this.version(1).stores({
-            chats: '++id, userId, chatId, symmetricKey',
-            messages: '++id, chatId, from, content, timestamp',
+            chats: '++id, userId, chatId, str_symmetricKey',
+            messages: '++id, chatId',
             users: '++id, chatId, user.address'
         });
 
@@ -32,7 +32,8 @@ export interface IChat {
     id?: number;
     userId: string,
     chatId: HexString;
-    symmetricKey: string;
+    symmetricKey: CryptoKey;
+    str_symmetricKey: string;
     name: string;
 }
 
@@ -41,7 +42,7 @@ export interface IMessage {
     chatId: HexString;
     from: HexString;
     content: string;
-    files: IpfsFile[];
+    files: IpfsFileWithRealFile[];
     timestamp: number;
 }
 
@@ -65,15 +66,32 @@ export async function addUser(user: IUser): Promise<number> {
     return await db.users.add(user);
 }
 
-export async function getMessagesByChatId(chatId: HexString): Promise<IMessage[]> {
+export async function getMessageCountForChatId(chatId: HexString): Promise<number> {
+    return await db.messages.where("chatId").equals(chatId).count();
+}
+export async function getMessagesForChat(chatId: HexString): Promise<IMessage[]> {
     return await db.messages.where("chatId").equals(chatId).toArray();
 }
+export async function getFilesByMessageId(messageId: number): Promise<IpfsFileWithRealFile[] | undefined> {
+    const message = await db.messages.get(messageId);
+    if(message){
+        return message.files;
+    }
+    else{
+        return undefined;
+    }
+}
+
 export async function getUsersByChatId(chatId: HexString): Promise<IUser[]> {
     return await db.users.where("chatId").equals(chatId).toArray();
 }
-export async function getSymmetricKeyByChatId(chatId: HexString): Promise<string | undefined> {
+export async function getSymmetricKeyByChatId(chatId: HexString): Promise<CryptoKey | undefined> {
     const chat = await db.chats.where("chatId").equals(chatId).first();
     return chat ? chat.symmetricKey : undefined;
+}
+export async function getStrSymmetricKeyByChatId(chatId: HexString): Promise<string | undefined> {
+    const chat = await db.chats.where("chatId").equals(chatId).first();
+    return chat ? chat.str_symmetricKey : undefined;
 }
 export async function getNameByChatId(chatId: HexString): Promise<string | undefined> {
     const chat = await db.chats.where("chatId").equals(chatId).first();

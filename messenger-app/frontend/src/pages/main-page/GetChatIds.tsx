@@ -8,8 +8,8 @@ import { gearApiContext } from 'context';
 import { useAccount } from '@gear-js/react-hooks';
 import { addChat } from 'utils/indexedDB';
 import { decryptDataWithPrivKey } from 'utils/crypto-defence/public-private-key-encryption';
-import { decryptData } from 'utils/crypto-defence/symmetric-key-encryption';
 import { YourInfo } from './MainLayer';
+import { decryptText, stringToSymmetricKey } from 'utils/crypto-defence/symmetric-key-encryption';
 
 interface SetChatIdsComponentProps {
     payload: {
@@ -39,11 +39,12 @@ export default function GetChatIds({payload, setChatIds, setLengthChatIds}: SetC
                         api, chat_id, metaGroupConnectionTxt, { GetUserEncryptedSymkey: { user: account.decodedAddress } }
                     );
                     const info: YourInfo = JSON.parse(localStorage.getItem(account.address)!);
-                    const sym_key = decryptDataWithPrivKey(info.privateKey, state.UserEncryptedSymkey.res);
+                    const str_sym_key = decryptDataWithPrivKey(info.privateKey, state.UserEncryptedSymkey.res);
+                    const sym_key = await stringToSymmetricKey(str_sym_key);
                     // const sym_key = decryptDataWithPrivKey(localStorage.getItem(account.address)!, state.UserEncryptedSymkey.res);
                     const statename = await readContractState<{ Name: { res: string } }>(api, chat_id, metaGroupConnectionTxt, { GetName: {} });
-                    const name = decryptData(statename.Name.res, sym_key);
-                    addChat({ userId: account.address, chatId: chat_id, symmetricKey: sym_key, name });
+                    const name = await decryptText(statename.Name.res, sym_key);
+                    addChat({ userId: account.address, chatId: chat_id, symmetricKey: sym_key, str_symmetricKey: str_sym_key, name });
                 });
     
                 await Promise.all(promises);

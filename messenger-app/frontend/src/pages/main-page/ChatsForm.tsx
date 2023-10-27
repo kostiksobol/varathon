@@ -5,7 +5,6 @@ import { useProgramMetadata } from 'hooks';
 import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { encryptDataWithPubKey } from 'utils/crypto-defence/public-private-key-encryption';
-import { encryptData, generateSymmetricKey } from 'utils/crypto-defence/symmetric-key-encryption';
 
 import metaMainConnectorTxt from 'assets/meta/main_connector.meta.txt'
 import { ChatButton } from './utilts/ChatButton';
@@ -15,6 +14,7 @@ import GetChatIds from './GetChatIds';
 import MessagesLoader from './MessagesLoader';
 import UsersLoader from './UsersLoader';
 import { YourInfo } from './MainLayer';
+import { createSymmetricKey, encryptText, symmetricKeyToString } from 'utils/crypto-defence/symmetric-key-encryption';
 
 export default function ChatsForm() {
     const { account } = useAccount();
@@ -46,13 +46,14 @@ export default function ChatsForm() {
     const createNewChat = useSendMessage(MAIN_CONTRACT_ADDRESS, useProgramMetadata(metaMainConnectorTxt));
 
     function handleCreateChatClick(name: string) {
-      return () => {
-        const sym_key = generateSymmetricKey();
+      return async () => {
+        const sym_key = await createSymmetricKey();
+        const str_sym_key = await symmetricKeyToString(sym_key);
         const raw_info = localStorage.getItem(account!.address);
         if(raw_info){
           const info: YourInfo = JSON.parse(raw_info);
-          const encrypted_symkey = encryptDataWithPubKey(info.publivKey, sym_key);
-          const encrypted_name = encryptData(name, sym_key);
+          const encrypted_symkey = encryptDataWithPubKey(info.publivKey, str_sym_key);
+          const encrypted_name = await encryptText(name, sym_key);
           createNewChat({CreateGroupConnection: { encrypted_name, encrypted_symkey }});
         }
       }

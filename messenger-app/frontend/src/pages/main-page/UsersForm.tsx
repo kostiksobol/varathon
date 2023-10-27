@@ -12,7 +12,7 @@ import { useProgramMetadata } from 'hooks';
 import { gearApiContext } from 'context';
 import { readContractState } from 'hooks/hooks';
 import { MAIN_CONTRACT_ADDRESS } from 'consts';
-import { IUser, User, db, getSymmetricKeyByChatId, getUsersByChatId } from 'utils/indexedDB';
+import { IUser, User, db, getStrSymmetricKeyByChatId, getSymmetricKeyByChatId, getUsersByChatId } from 'utils/indexedDB';
 import { stringToHex } from '@polkadot/util';
 
 export default function UsersForm() {
@@ -34,7 +34,7 @@ export default function UsersForm() {
           console.error(error);
       });
 
-      getSymmetricKeyByChatId(chat_id)
+      getStrSymmetricKeyByChatId(chat_id)
       .then((symkey) => {
           if(symkey){
               setSymKey(symkey);
