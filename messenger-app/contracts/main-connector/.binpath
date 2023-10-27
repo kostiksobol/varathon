@@ -1,1 +1,1 @@
-../target/wasm32-unknown-unknown/debug/main_connector
+../target/wasm32-unknown-unknown/release/main_connector

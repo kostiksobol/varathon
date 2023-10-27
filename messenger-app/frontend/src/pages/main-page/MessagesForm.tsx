@@ -61,7 +61,6 @@ export function MessagesForm(){
 
     function handleSendMessageClick(message: string, files: FileList | null){
         return async () => {
-            console.log("message: ", message, "symKey: ", symKey)
             if(message === '' && !files){
                 return;
             }
@@ -74,7 +73,6 @@ export function MessagesForm(){
                         const file = files[i];
                         const added = await client.add(file)
                         const hash = added.path;
-                        console.log(hash);
                         ipfsfiles.push({name: encryptData(file.name, symKey), tip: encryptData(file.type, symKey), sizet: encryptData(file.size.toString(), symKey), 
                             hashipfs: encryptData(hash, symKey)});
                         // uploadToIpfs(file)
@@ -84,7 +82,6 @@ export function MessagesForm(){
                         // })
                     }
                 }
-                console.log(ipfsfiles)
                 sendMessage({Send: {encrypted_content, files: ipfsfiles}});
             }
         }

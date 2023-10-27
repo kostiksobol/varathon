@@ -19,6 +19,7 @@ impl Metadata for ProgramMetadata {
 
 #[derive(Encode, Decode, TypeInfo)]
 pub struct ConnectionInit {
+    pub name: String,
     pub user: ActorId,
     pub encrypted_symkey: String,
 }
@@ -65,6 +66,7 @@ pub struct Message {
 
 #[derive(Encode, Decode, TypeInfo)]
 pub enum StatePayload{
+    GetName,
     GetUsersStartFrom{from: u32},
     GetMessagesStartFrom{from: u32},
     GetUserEncryptedSymkey{user: ActorId},
@@ -72,6 +74,7 @@ pub enum StatePayload{
 
 #[derive(Encode, Decode, TypeInfo)]
 pub enum StateOutput{
+    Name{res: String},
     UsersStartFrom{res: Vec<ActorId>},
     MessagesStartFrom{res: Vec<Message>},
     UserEncryptedSymkey{res: String},

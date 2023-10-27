@@ -113,6 +113,8 @@
 // }
 
 import { HexString } from "@gear-js/api";
+import { useEffect, useState } from "react";
+import { User, db, getUserByAddress } from "utils/indexedDB";
 
 const styles = {
   messageContainer: {
@@ -193,10 +195,18 @@ const FileInfo: React.FC<FileInfoProps> = ({ file }) => {
 };
 
 export function MessageForm({message}: MessageFormProps){
+  const [fromUser, setfromUser] = useState<User>();
+  useEffect(() => {
+    getUserByAddress(message.from).then((user) => {
+      if(user){
+        setfromUser({name: user.user.name, login: user.user.login, address: user.user.address});
+      }
+    })
+  }, [])
   return (
     <div style={styles.messageContainer}>
       <div style={{ fontWeight: 'bold', color: '#ddd', marginBottom: '5px' }}>
-        {message.from}
+        {fromUser?.name} ({fromUser?.login})
       </div>
       <div
         style={{
@@ -209,8 +219,13 @@ export function MessageForm({message}: MessageFormProps){
       >
         <div
           style={{
-            wordBreak: 'break-all',
-          }}
+            border: '1px solid #ddd',
+            borderRadius: '5px',
+            padding: '0.5rem',
+            wordBreak: 'break-all',  // Break the word if it's too long to fit in one line
+            position: 'relative', // Add this line for positioning the icon
+            width: '100%'
+        }}
         >
           {message.encryptedContent}
         </div>
@@ -226,7 +241,7 @@ export function MessageForm({message}: MessageFormProps){
           Number(message.timestamp.toString().replace(/,/g, ''))
         ).toLocaleString()}
       </div>
-      {message.files.map((file) => (<FileInfo file={file}/>))}
+      {message.files.map((file, index) => (<FileInfo key={index} file={file}/>))}
     </div>
   );
 }

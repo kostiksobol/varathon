@@ -9,8 +9,8 @@ export default function AddNewUserForm({handleAddUserClick}: {handleAddUserClick
       type="text"
       value={newUser}
       onChange={(e) => setNewUser(e.target.value)}
-      placeholder="Enter User Id"
-      pattern="^0x[A-Za-z0-9]+$" 
+      placeholder="Enter User Address or Login"
+      // pattern="^0x[A-Za-z0-9]+$" 
       style={{
         marginRight: '0.5rem',
         padding: '0.5rem',

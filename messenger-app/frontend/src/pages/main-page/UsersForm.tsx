@@ -12,7 +12,8 @@ import { useProgramMetadata } from 'hooks';
 import { gearApiContext } from 'context';
 import { readContractState } from 'hooks/hooks';
 import { MAIN_CONTRACT_ADDRESS } from 'consts';
-import { IUser, db, getSymmetricKeyByChatId, getUsersByChatId } from 'utils/indexedDB';
+import { IUser, User, db, getSymmetricKeyByChatId, getUsersByChatId } from 'utils/indexedDB';
+import { stringToHex } from '@polkadot/util';
 
 export default function UsersForm() {
   const params = useParams<{ id: HexString }>();
@@ -20,7 +21,7 @@ export default function UsersForm() {
   const api = useContext(gearApiContext);
 
   const [symKey, setSymKey] = useState<string>();
-  const [users, setUsers] = useState<HexString[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
       getUsersByChatId(chat_id)
@@ -58,29 +59,65 @@ export default function UsersForm() {
   const addUserMessage = useSendMessage(chat_id, useProgramMetadata(metaGroupConnectionTxt));
   const [showNotification, setShowNotification] = useState(false);
 
-  function handleAddUserClick(newUser: HexString){
+  function handleAddUserClick(newUser: string){
       return () => {
         if(api){
-            readContractState<{UserPubKey: {res: string}}>(api, MAIN_CONTRACT_ADDRESS, metaMainConnectorTxt, {GetUserPubKey: {user: newUser}})
+          if(newUser[0] === '0' && newUser[1] === 'x'){
+            readContractState<{User: {res: {address: HexString, login: string, name: string, pubkey: string}}}>(api, MAIN_CONTRACT_ADDRESS, metaMainConnectorTxt, {GetUserByAddress: {address: newUser}})
             .then((state) => {
                 if(symKey){
-                    setShowNotification(false);
-                    console.log(symKey);
-                    console.log(state.UserPubKey.res);
-                    const encrypted_symkey = encryptDataWithPubKey(state.UserPubKey.res, symKey);
-                    addUserMessage({    Add: {
-                        user: newUser,
-                        encrypted_symkey,
-                    }}); 
+                    if(state.User.res.pubkey.length > 0){
+                      setShowNotification(false);
+                      const encrypted_symkey = encryptDataWithPubKey(state.User.res.pubkey, symKey);
+                      addUserMessage({    Add: {
+                          user: newUser,
+                          encrypted_symkey,
+                      }}); 
+                    }
+                    else{
+                      setShowNotification(true);
+                      setTimeout(() => {
+                        setShowNotification(false);
+                      }, 2000);
+                    }
                 }
             })
-          .catch((error) => {
-            setShowNotification(true);
-            console.error(error)
-            setTimeout(() => {
-              setShowNotification(false);
-            }, 2000);
-          });
+            .catch((error) => {
+              setShowNotification(true);
+              console.error(error)
+              setTimeout(() => {
+                setShowNotification(false);
+              }, 2000);
+            });
+          }
+          else{
+            readContractState<{User: {res: {address: HexString, login: string, name: string, pubkey: string}}}>(api, MAIN_CONTRACT_ADDRESS, metaMainConnectorTxt, {GetUserByLogin: {login: newUser}})
+            .then((state) => {
+                if(symKey){
+                    if(state.User.res.pubkey.length > 0){
+                      setShowNotification(false);
+                      const encrypted_symkey = encryptDataWithPubKey(state.User.res.pubkey, symKey);
+                      addUserMessage({    Add: {
+                          user: state.User.res.address,
+                          encrypted_symkey,
+                      }}); 
+                    }
+                    else{
+                      setShowNotification(true);
+                      setTimeout(() => {
+                        setShowNotification(false);
+                      }, 2000);
+                    }
+                }
+            })
+            .catch((error) => {
+              setShowNotification(true);
+              console.error(error)
+              setTimeout(() => {
+                setShowNotification(false);
+              }, 2000);
+            });
+          }
         }
       }
   }
@@ -94,7 +131,7 @@ export default function UsersForm() {
     }}
     >
       {users.map((user, index) => (
-        <UserForm key={index} address={user} />
+        <UserForm key={index} address={user.address} login={user.login} name={user.name}/>
       ))}
         {showNotification && (
         <div

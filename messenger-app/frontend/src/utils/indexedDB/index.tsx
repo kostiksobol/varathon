@@ -13,7 +13,7 @@ class MessengerDB extends Dexie {
         this.version(1).stores({
             chats: '++id, userId, chatId, symmetricKey',
             messages: '++id, chatId, from, content, timestamp',
-            users: '++id, chatId, user'
+            users: '++id, chatId, user.address'
         });
 
         this.chats = this.table("chats");
@@ -22,11 +22,18 @@ class MessengerDB extends Dexie {
     }
 }
 
+export type User = {
+    address: HexString;
+    login: string;
+    name: string;
+}
+
 export interface IChat {
     id?: number;
     userId: string,
     chatId: HexString;
     symmetricKey: string;
+    name: string;
 }
 
 export interface IMessage {
@@ -41,7 +48,7 @@ export interface IMessage {
 export interface IUser {
     id?: number;
     chatId: HexString;
-    user: HexString;
+    user: User;
 }
 
 export const db = new MessengerDB();
@@ -68,3 +75,19 @@ export async function getSymmetricKeyByChatId(chatId: HexString): Promise<string
     const chat = await db.chats.where("chatId").equals(chatId).first();
     return chat ? chat.symmetricKey : undefined;
 }
+export async function getNameByChatId(chatId: HexString): Promise<string | undefined> {
+    const chat = await db.chats.where("chatId").equals(chatId).first();
+    return chat ? chat.name: undefined;
+}
+export async function getUserByAddress(address: HexString): Promise<IUser | undefined> {
+    try {
+      const user = await db.users
+        .where('user.address')
+        .equals(address)
+        .first();
+      return user;
+    } catch (error) {
+      console.error('Error fetching user by address:', error, address);
+      return undefined;
+    }
+  }

@@ -24,10 +24,6 @@ export default function GetMessages({payload, setLastLength, chatId, symKey} : C
     useEffect(() => {
         if (serverMessages && serverMessages.MessagesStartFrom.res.length > 0) {
           const newMessages = serverMessages.MessagesStartFrom.res;
-          // db.strings.bulkAdd(newStrings.map(value => ({ value })));
-        //   newStrings.forEach((str) => {
-        //     db.strings.add({value: str});
-        //   })
         newMessages.forEach((msg) => {
             const ipfsfiles: IpfsFile[] = msg.files.map((encr_file) => {
               return {name: decryptData(encr_file.name, symKey), tip: decryptData(encr_file.tip, symKey), sizet: decryptData(encr_file.sizet, symKey), hashipfs: decryptData(encr_file.hashipfs, symKey)};

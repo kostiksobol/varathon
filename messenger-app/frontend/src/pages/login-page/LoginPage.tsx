@@ -6,6 +6,8 @@ import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { checkCorrectPrivateAndPublicKeys } from 'utils/crypto-defence/public-private-key-encryption';
 import metaMainConnectorTxt from 'assets/meta/main_connector.meta.txt';
+import { HexString } from '@gear-js/api';
+import { YourInfo } from 'pages/main-page/MainLayer';
 
 export default function LoginPage() {
   const [inputValue, setInputValue] = useState('');
@@ -15,17 +17,19 @@ export default function LoginPage() {
 
   const api = useContext(gearApiContext);
 
-  const myPubKey = useContractStateOnce<{UserPubKey: {res: string}}>(api, MAIN_CONTRACT_ADDRESS, metaMainConnectorTxt, {GetUserPubKey: {user: account!.decodedAddress}});
+  const myUser = useContractStateOnce<{User: {res: {address: HexString, login: string, name: string, pubkey: string}}}>(api, MAIN_CONTRACT_ADDRESS, metaMainConnectorTxt, {GetUserByAddress: {address: account!.decodedAddress}});
 
   const [showNotification, setShowNotification] = useState(false);
 
   const handleButtonClick = () => {
     const privKey = inputValue;
-    if (myPubKey && addr && myPubKey.UserPubKey) {
+    if (myUser && addr && myUser.User.res.pubkey.length > 0) {
       try{
-        if (checkCorrectPrivateAndPublicKeys(privKey, myPubKey.UserPubKey.res)) {
-          localStorage.setItem(addr, privKey);
-          localStorage.setItem(account.decodedAddress, myPubKey.UserPubKey.res);
+        if (checkCorrectPrivateAndPublicKeys(privKey, myUser.User.res.pubkey)) {
+          // localStorage.setItem(addr, privKey);
+          // localStorage.setItem(account.decodedAddress, myUser.User.res.pubkey);
+          const info: YourInfo = {privateKey: privKey, publivKey: myUser.User.res.pubkey, login: myUser.User.res.login, name: myUser.User.res.name};
+          localStorage.setItem(addr, JSON.stringify(info));
           navigate(`/${account?.meta.name}`);
         } else {
           setShowNotification(true);

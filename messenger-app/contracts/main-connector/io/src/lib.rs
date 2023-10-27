@@ -24,33 +24,35 @@ pub struct ConnectorInit {
 
 #[derive(Clone, Encode, Decode, TypeInfo, Eq, PartialEq)]
 pub enum ConnectorHandleAction {
-    RegisterPubKey { pubkey: String },
-    CreateGroupConnection { encrypted_symkey: String },
+    Register { login: String, name: String, pubkey: String },
+    CreateGroupConnection { encrypted_name: String, encrypted_symkey: String },
     AddUserToGroupConnection { user: ActorId },
 }
 
 #[derive(Encode, Decode, TypeInfo)]
 pub enum ConnectorHandleEvent {
-    RegisteredPubKey,
+    Registered,
     GroupConnectionCreated,
     AddedUserToGroupConnection,
 }
-#[derive(Default)]
-pub struct Connector {
-    pub group_connection_code_id: CodeId,
-    pub users_pubkeys: BTreeMap<ActorId, String>,
-    pub all_connections: BTreeSet<ActorId>,
-    pub users_connections: BTreeMap<ActorId, Vec<ActorId>>,
+
+#[derive(Encode, Decode, TypeInfo, Default)]
+pub struct User{
+    pub address: ActorId,
+    pub login: String,
+    pub name: String,
+    pub pubkey: String,
 }
 
 #[derive(Encode, Decode, TypeInfo)]
 pub enum StatePayload{
     GetLastChatIdsFrom { from: u32, for_whom: ActorId },
-    GetUserPubKey {user: ActorId},
+    GetUserByAddress {address: ActorId},
+    GetUserByLogin {login: String},
 }
 
 #[derive(Encode, Decode, TypeInfo)]
 pub enum StateOutput{
     LastChatIds { res: Vec<ActorId> },
-    UserPubKey {res: String},
+    User {res: User},
 }

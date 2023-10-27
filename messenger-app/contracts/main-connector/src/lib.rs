@@ -10,25 +10,31 @@ use scale_info::TypeInfo;
 #[derive(Default)]
 pub struct Connector {
     pub group_connection_code_id: CodeId,
-    pub users_pubkeys: HashMap<ActorId, String>,
+    pub addresses_users: HashMap<ActorId, usize>,
+    pub logins_users: HashMap<String, usize>,
+    pub users: Vec<User>,
     pub all_connections: HashSet<ActorId>,
     pub users_connections: HashMap<ActorId, Vec<ActorId>>,
 }
 
 impl Connector {
-    fn register_pub_key(&mut self, pubkey: String) {
+    fn register_pub_key(&mut self, login: String, name: String, pubkey: String) {
         let msg_source = msg::source();
-        self.users_pubkeys
-            .try_insert(msg_source, pubkey)
+        let n = self.users.len();
+        self.addresses_users
+            .try_insert(msg_source, n)
             .expect("You have already been registered");
+        self.logins_users.try_insert(login.clone(), n).expect("Such login is taken");
+        self.users.push(User { address: msg_source, login, name, pubkey });
         self.users_connections.try_insert(msg_source, Default::default());
     }
-    fn create_group_connection(&mut self, encrypted_symkey: String) {
+    fn create_group_connection(&mut self, encrypted_name: String, encrypted_symkey: String) {
         let msg_source = msg::source();
 
         let (_, address) = gstd::prog::ProgramGenerator::create_program_with_gas(
             self.group_connection_code_id,
             group_connection_io::ConnectionInit {
+                name: encrypted_name,
                 user: msg_source,
                 encrypted_symkey,
             },
@@ -81,9 +87,9 @@ unsafe extern "C" fn handle() {
     let connector = CONNECTOR.get_or_insert(Default::default());
 
     match action {
-        ConnectorHandleAction::RegisterPubKey { pubkey } => connector.register_pub_key(pubkey),
-        ConnectorHandleAction::CreateGroupConnection { encrypted_symkey } => {
-            connector.create_group_connection(encrypted_symkey)
+        ConnectorHandleAction::Register { login, name, pubkey } => connector.register_pub_key(login, name, pubkey),
+        ConnectorHandleAction::CreateGroupConnection { encrypted_name, encrypted_symkey } => {
+            connector.create_group_connection(encrypted_name, encrypted_symkey)
         }
         ConnectorHandleAction::AddUserToGroupConnection { user } => {
             connector.add_user_to_group_connection(user)
@@ -101,9 +107,21 @@ extern "C" fn state() {
             let res = connector.users_connections.get(&for_whom).unwrap().get(from as usize ..).unwrap_or(Default::default()).to_vec();
             msg::reply(StateOutput::LastChatIds { res }, 0).expect("Failed to share state");
         }
-        StatePayload::GetUserPubKey { user } => {
-            let res = gstd::mem::take(connector.users_pubkeys.get_mut(&user).unwrap_or(&mut Default::default()));
-            msg::reply(StateOutput::UserPubKey { res }, 0).expect("Failed to share state");
+        StatePayload::GetUserByAddress { address } => {
+            let res: User;
+            match connector.addresses_users.get_mut(&address) {
+                None => res = Default::default(),
+                Some(n) => res = gstd::mem::take(&mut connector.users[*n]),  
+            }
+            msg::reply(StateOutput::User { res }, 0).expect("Failed to share state");
+        }
+        StatePayload::GetUserByLogin { login } => {
+            let res: User;
+            match connector.logins_users.get_mut(&login) {
+                None => res = Default::default(),
+                Some(n) => res = gstd::mem::take(&mut connector.users[*n]),  
+            }
+            msg::reply(StateOutput::User { res }, 0).expect("Failed to share state");
         }
     }
 }

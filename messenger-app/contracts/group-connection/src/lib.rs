@@ -12,6 +12,7 @@ use group_connection_io::{
 };
 #[derive(Default)]
 pub struct Connection {
+    pub name: String,
     pub main_connector_id: ActorId,
     pub users_encrypted_symkeys: HashMap<ActorId, String>,
     pub users: Vec<ActorId>,
@@ -69,6 +70,7 @@ unsafe extern "C" fn init() {
         main_connector_id: msg::source(),
         users_encrypted_symkeys: HashMap::from([(init_config.user, init_config.encrypted_symkey)]),
         users: Vec::from([init_config.user]),
+        name: init_config.name,
         ..Default::default()
     });
 }
@@ -93,6 +95,10 @@ extern "C" fn state() {
     let payload: StatePayload = msg::load().expect("Error in decoding payload in state function");
     let connection: &mut Connection = unsafe { CONNECTION.get_or_insert(Default::default()) };
     match payload {
+        StatePayload::GetName => {
+            let res = gstd::mem::take(&mut connection.name);
+            msg::reply(StateOutput::Name { res }, 0).expect("Failed to share state");
+        }
         StatePayload::GetUsersStartFrom { from } => {
             let res = connection.users.get(from as usize ..).unwrap_or(Default::default()).to_vec();
             msg::reply(StateOutput::UsersStartFrom { res }, 0).expect("Failed to share state");
