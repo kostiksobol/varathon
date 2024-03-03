@@ -1,12 +1,46 @@
-import { Buffer } from 'buffer';
+// import { Buffer } from 'buffer';
 
 // Utility function to convert a Uint8Array to a base64 string.
-function bufferToBase64(buffer: Uint8Array): string {
+function bufferToBase64_(buffer: Uint8Array): string {
   return Buffer.from(buffer).toString('base64');
 }
 
 // Utility function to convert a base64 string to a Uint8Array.
+function base64ToBuffer_(base64: string): Uint8Array {
+  return new Uint8Array(Buffer.from(base64, 'base64'));
+}
+
+// export async function symmetricKeyToString(key: CryptoKey): Promise<string> {
+//   const keyBuffer = await crypto.subtle.exportKey('raw', key);
+//   return bufferToBase64(new Uint8Array(keyBuffer));
+// }
+
+// const SYMKEY_SIZE_IN_BYTES = 16;
+
+// export async function stringToSymmetricKey(str: string): Promise<CryptoKey> {
+//   const keyBuffer = base64ToBuffer(str);
+
+//   const key = await crypto.subtle.importKey('raw', keyBuffer, {
+//     name: 'AES-GCM',
+//     length: SYMKEY_SIZE_IN_BYTES * 8
+//   }, true, ['encrypt', 'decrypt']);
+
+//   return key;
+// }
+
+import { Buffer } from 'buffer';
+
+// Utility function to convert a Uint8Array to a URL and Filename safe base64 string.
+function bufferToBase64(buffer: Uint8Array): string {
+  return Buffer.from(buffer).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+// Utility function to convert a URL and Filename safe base64 string to a Uint8Array.
 function base64ToBuffer(base64: string): Uint8Array {
+  base64 = base64.replace(/-/g, '+').replace(/_/g, '/');
+  while (base64.length % 4) {
+    base64 += '=';
+  }
   return new Uint8Array(Buffer.from(base64, 'base64'));
 }
 
@@ -27,6 +61,7 @@ export async function stringToSymmetricKey(str: string): Promise<CryptoKey> {
 
   return key;
 }
+
 
 export async function createSymmetricKey(): Promise<CryptoKey> {
   const keyData = window.crypto.getRandomValues(new Uint8Array(SYMKEY_SIZE_IN_BYTES));
@@ -57,11 +92,11 @@ export async function encryptText(text: string, symmetricKey: CryptoKey): Promis
     combinedBuffer.set(iv);
     combinedBuffer.set(new Uint8Array(encryptedBuffer), IV_LENGTH);
     
-    return bufferToBase64(combinedBuffer);
+    return bufferToBase64_(combinedBuffer);
 }
 
 export async function decryptText(encryptedText: string, symmetricKey: CryptoKey): Promise<string> {
-    const combinedBuffer = base64ToBuffer(encryptedText);
+    const combinedBuffer = base64ToBuffer_(encryptedText);
     const iv = combinedBuffer.slice(0, IV_LENGTH);
 
     const encryptedData = combinedBuffer.slice(IV_LENGTH);

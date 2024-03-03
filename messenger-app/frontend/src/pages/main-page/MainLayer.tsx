@@ -3,12 +3,14 @@ import React from 'react'
 import GetPubKey from './GetPubKey';
 import ChatsForm from './ChatsForm';
 import { Outlet } from 'react-router-dom';
+import { HexString } from '@gear-js/api';
 
 export type YourInfo = {
   privateKey: string;
   publivKey: string;
   login: string;
   name: string;
+  contract: HexString;
 }
 
 export default function MainLayer() {

@@ -17,7 +17,7 @@ export default function LoginPage() {
 
   const api = useContext(gearApiContext);
 
-  const myUser = useContractStateOnce<{User: {res: {address: HexString, login: string, name: string, pubkey: string}}}>(api, MAIN_CONTRACT_ADDRESS, metaMainConnectorTxt, {GetUserByAddress: {address: account!.decodedAddress}});
+  const myUser = useContractStateOnce<{User: {res: {address: HexString, login: string, name: string, pubkey: string, contract: HexString}}}>(api, MAIN_CONTRACT_ADDRESS, metaMainConnectorTxt, {GetUserByAddress: {address: account!.decodedAddress}});
 
   const [showNotification, setShowNotification] = useState(false);
 
@@ -28,7 +28,7 @@ export default function LoginPage() {
         if (checkCorrectPrivateAndPublicKeys(privKey, myUser.User.res.pubkey)) {
           // localStorage.setItem(addr, privKey);
           // localStorage.setItem(account.decodedAddress, myUser.User.res.pubkey);
-          const info: YourInfo = {privateKey: privKey, publivKey: myUser.User.res.pubkey, login: myUser.User.res.login, name: myUser.User.res.name};
+          const info: YourInfo = {privateKey: privKey, publivKey: myUser.User.res.pubkey, login: myUser.User.res.login, name: myUser.User.res.name, contract: myUser.User.res.contract};
           localStorage.setItem(addr, JSON.stringify(info));
           navigate(`/${account?.meta.name}`);
         } else {

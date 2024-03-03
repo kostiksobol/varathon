@@ -1,5 +1,5 @@
 [package]
-name = "main-connector"
+name = "user-contract"
 version = "0.1.0"
 edition = "2021"
 
@@ -11,11 +11,11 @@ scale-info.workspace = true
 parity-scale-codec.workspace = true
 hashbrown.workspace = true
 
-main-connector-io.workspace = true
 user-contract-io.workspace = true
+main-connector-io.workspace = true
 
 [build-dependencies]
 gear-wasm-builder.workspace = true
 gmeta.workspace = true
 
-main-connector-io.workspace = true
+user-contract-io.workspace = true

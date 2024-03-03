@@ -1,6 +1,5 @@
 #![no_std]
 
-use gstd::collections::{BTreeMap, BTreeSet};
 use gmeta::{InOut, Metadata};
 use gstd::{prelude::*, ActorId, CodeId};
 use parity_scale_codec::{Decode, Encode};
@@ -19,21 +18,25 @@ impl Metadata for ProgramMetadata {
 
 #[derive(Encode, Decode, TypeInfo)]
 pub struct ConnectorInit {
-    pub group_connection_code_id: CodeId,
+    pub user_contract_code_id: CodeId,
 }
 
 #[derive(Clone, Encode, Decode, TypeInfo, Eq, PartialEq)]
 pub enum ConnectorHandleAction {
     Register { login: String, name: String, pubkey: String },
-    CreateGroupConnection { encrypted_name: String, encrypted_symkey: String },
-    AddUserToGroupConnection { user: ActorId },
+    AddRecord { record: String, index: u64 },
 }
 
 #[derive(Encode, Decode, TypeInfo)]
 pub enum ConnectorHandleEvent {
     Registered,
-    GroupConnectionCreated,
-    AddedUserToGroupConnection,
+    AddedRecord,
+}
+
+#[derive(Encode, Decode, TypeInfo, Default, Clone)]
+pub struct Record{
+    pub record: String,
+    pub index: u64,
 }
 
 #[derive(Encode, Decode, TypeInfo, Default)]
@@ -42,17 +45,18 @@ pub struct User{
     pub login: String,
     pub name: String,
     pub pubkey: String,
+    pub contract: ActorId,
 }
 
 #[derive(Encode, Decode, TypeInfo)]
 pub enum StatePayload{
-    GetLastChatIdsFrom { from: u32, for_whom: ActorId },
+    GetLastRecords { from: u32 },
     GetUserByAddress {address: ActorId},
     GetUserByLogin {login: String},
 }
 
 #[derive(Encode, Decode, TypeInfo)]
 pub enum StateOutput{
-    LastChatIds { res: Vec<ActorId> },
+    LastRecords { res: Vec<Record> },
     User {res: User},
 }

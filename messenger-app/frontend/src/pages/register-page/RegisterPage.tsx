@@ -107,7 +107,7 @@ export default function Register() {
 
   const [showNotification, setShowNotification] = useState(false);
 
-  const { state: user } = useContractState<{User: {res: {address: HexString, login: string, name: string, pubkey: string}}}>(
+  const { state: user } = useContractState<{User: {res: {address: HexString, login: string, name: string, pubkey: string, contract: HexString}}}>(
     MAIN_CONTRACT_ADDRESS,
     metaMainConnectorTxt,
     { GetUserByAddress: { address: account!.decodedAddress } }
@@ -124,7 +124,7 @@ export default function Register() {
       return;
     }
     if(api){
-      readContractState<{User: {res: {address: HexString, login: string, name: string, pubkey: string}}}>(api, MAIN_CONTRACT_ADDRESS, metaMainConnectorTxt, {GetUserByLogin: {login}})
+      readContractState<{User: {res: {address: HexString, login: string, name: string, pubkey: string, contract: HexString}}}>(api, MAIN_CONTRACT_ADDRESS, metaMainConnectorTxt, {GetUserByLogin: {login}})
       .then((state) => {
         if(state.User.res.pubkey.length > 0){
           setShowNotification(true);
@@ -149,7 +149,7 @@ export default function Register() {
       if (user.User.res.pubkey.length > 50 && addr && privkey) {
         // localStorage.setItem(addr, privkey);
         // localStorage.setItem(account.decodedAddress, user.User.res.pubkey);
-        const info: YourInfo = {privateKey: privkey, publivKey: user.User.res.pubkey, login: user.User.res.login, name: user.User.res.name};
+        const info: YourInfo = {privateKey: privkey, publivKey: user.User.res.pubkey, login: user.User.res.login, name: user.User.res.name, contract: user.User.res.contract};
         localStorage.setItem(addr, JSON.stringify(info));
         setIsRegister(true);
       }

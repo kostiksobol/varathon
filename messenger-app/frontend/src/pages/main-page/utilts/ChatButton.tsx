@@ -73,12 +73,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import { getNameByChatId } from "utils/indexedDB";
 
 type ChatButtonProps = {
-    chat_id: HexString;
+    chat_id: string;
 };
 
 export function ChatButton({ chat_id }: ChatButtonProps) {
     const navigate = useNavigate();
-    const params = useParams<{ id: HexString }>();
+    const params = useParams<{ id: string }>();
     const selectedChatId = params.id!;
 
     const [name, setName] = useState('');

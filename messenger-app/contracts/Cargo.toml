@@ -1,18 +1,17 @@
 [workspace]
 members = [
     "main-connector",
-    "group-connection",
+    "user-contract",
 ]
 
 [workspace.dependencies]
-gstd = { git = "https://github.com/gear-tech/gear.git", tag = "v0.3.3" }
-gmeta = {  git = "https://github.com/gear-tech/gear.git", tag = "v0.3.3"  }
-gtest = {  git = "https://github.com/gear-tech/gear", tag = "v0.3.3" }
-gear-wasm-builder = { git = "https://github.com/gear-tech/gear.git", tag = "v0.3.3" }
+gstd = "1.1.0"
+gmeta = "1.1.0"
+gear-wasm-builder = "1.1.0"
 
 parity-scale-codec = { version = "3", default-features = false }
 scale-info = { version = "2", default-features = false }
 hashbrown = "0.14"   
 
 main-connector-io.path = "main-connector/io"
-group-connection-io.path = "group-connection/io"
+user-contract-io.path = "user-contract/io"

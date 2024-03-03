@@ -12,7 +12,7 @@ export default function GetPubKey({address}: {address: string}) {
     const api = useContext(gearApiContext);
     const { account } = useAccount();
     const payload = useMemo(() => ({GetUserByAddress: {address}}), []);
-    const user = useContractStateOnce<{User: {res: {address: HexString, login: string, name: string, pubkey: string}}}>(api, MAIN_CONTRACT_ADDRESS, metaMainConnectorTxt, payload);
+    const user = useContractStateOnce<{User: {res: {address: HexString, login: string, name: string, pubkey: string, contract: HexString}}}>(api, MAIN_CONTRACT_ADDRESS, metaMainConnectorTxt, payload);
     useEffect(() => {
         if(user){
             if(user.User.res.pubkey.length > 0){

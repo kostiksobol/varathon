@@ -168,10 +168,8 @@ export type IpfsFileWithRealFile = {
 }
 
 export type Message = {
-  from: HexString;
   encryptedContent: string;
   files: IpfsFile[];
-  timestamp: number;
 };
 
 export type MessageWithRealFile = {
@@ -231,7 +229,7 @@ export function MessageForm({message}: MessageFormProps){
   useEffect(() => {
     getUserByAddress(message.from).then((user) => {
       if(user){
-        setfromUser({name: user.user.name, login: user.user.login, address: user.user.address});
+        setfromUser({name: user.user.name, login: user.user.login, address: user.user.address, contract: user.user.contract});
       }
     })
   }, [])
