@@ -1,4 +1,4 @@
-https://ipfs.io/ipfs/QmaNdPtpwaBUNGe1B3Wq6CCbrpv8bw6PsKXYqGsfZL4Axb
+https://ipfs.io/ipfs/QmaNdPtpwaBUNGe1B3Wq6CCbrpv8bw6PskXYqGsfZL4Axb
 
 You need:
 - extension IPFS Companion (https://chrome.google.com/webstore/detail/ipfs-companion/nibjojkomfdiaoajekhjakgkdhaomnch?utm_source=ext_sidebar&hl=en-US)
