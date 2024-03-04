@@ -4,10 +4,9 @@ import { IpfsFileWithRealFile, Message } from './utilts/MessageForm';
 import { HexString } from '@gear-js/api';
 import metaGroupConnectionTxt from 'assets/meta/user_contract.meta.txt';
 import { IUser, addMessage, addUser, checkIfUserAlreadyAdded, db, setLastMessageId } from 'utils/indexedDB';
-import { IpfsFile } from './utilts/MessageForm';
 import { decryptFile, decryptText } from 'utils/crypto-defence/symmetric-key-encryption';
 import { verifyHMACWithNonce } from 'utils/crypto-defence/HMAC';
-import { Invitation, InvitationMessage } from './ChatsForm';
+import { InvitationMessage } from './ChatsForm';
 import { gearApiContext } from 'context';
 import { MAIN_CONTRACT_ADDRESS } from 'consts';
 import metaMainConnectorTxt from 'assets/meta/main_connector.meta.txt';
@@ -29,10 +28,8 @@ export default function GetMessages({ payload, setLastLength, user, symKey }: Co
     const {account} = useAccount();
 
     const { state: serverMessages } = useContractState<{ LastMessages: { res: { encryptedContent: string, tag: string, timestamp: number }[] } }>(user.user.contract, metaGroupConnectionTxt, payload);
-    // console.log(serverMessages)
-    // console.log(payload);
     useEffect(() => {
-        (async () => { // IIFE (Immediately Invoked Function Expression) to allow for async operations
+        (async () => {
             while (!api || !account) {
                 await new Promise(resolve => setTimeout(resolve, 1000));
             }
@@ -44,7 +41,6 @@ export default function GetMessages({ payload, setLastLength, user, symKey }: Co
                     const check = await verifyHMACWithNonce(msg.tag, user.chatId);
                     if (check) {
                         const decrypted_message = await decryptText(msg.encryptedContent, symKey);
-                        // console.log(decrypted_message);
                         try {
                             const message = JSON.parse(decrypted_message) as Message;
 
@@ -81,14 +77,12 @@ export default function GetMessages({ payload, setLastLength, user, symKey }: Co
                         catch {
                             try {
                                 const invitation_message = JSON.parse(decrypted_message) as InvitationMessage;
-                                // console.log(invitation_message);
                                 const check = await checkIfUserAlreadyAdded(user.chatId, account.address, invitation_message.invited);
                                 if (check) {
 
                                 }
                                 else {
                                     const member_state = await readContractState<{ User: { res: { address: HexString, login: string, name: string, pubkey: string, contract: HexString } } }>(api, MAIN_CONTRACT_ADDRESS, metaMainConnectorTxt, { GetUserByAddress: { address: invitation_message.invited } });
-                                    // console.log(member_state);
                                     await addUser({ userId: account.address, chatId: user.chatId, user: { address: member_state.User.res.address, login: member_state.User.res.login, name: member_state.User.res.name, contract: member_state.User.res.contract }, lastMessagesId: 0 });
                                 }
                             }
@@ -99,7 +93,6 @@ export default function GetMessages({ payload, setLastLength, user, symKey }: Co
 
                 }
 
-                // Finally, after processing all messages, update setLastLength
                 await setLastMessageId(user.id!, newMessages.length);
                 setLastLength(prevLength => prevLength + newMessages.length);
             }

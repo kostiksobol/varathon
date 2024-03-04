@@ -1,7 +1,5 @@
-import { HexString } from '@gear-js/api';
-import React, { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { IUser, User, db, getSymmetricKeyByChatId, getUsersByChatId } from 'utils/indexedDB';
-import GetMessages from './GetMessages';
 import MessagesLoader from './MessagesLoader';
 import { useAccount } from '@gear-js/react-hooks';
 
@@ -41,11 +39,6 @@ export default function MessagesLoaderForAllUsers({chatId}: {chatId: string}) {
             db.users.hook('creating').unsubscribe(creatingHook);
           });
     }, []);
-
-    // console.log(chatId);
-    // console.log(users);
-    // console.log(dataLoaded);
-    // console.log(symKey);
 
     return (
         <>

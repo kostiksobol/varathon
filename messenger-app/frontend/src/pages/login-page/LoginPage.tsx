@@ -26,8 +26,6 @@ export default function LoginPage() {
     if (myUser && addr && myUser.User.res.pubkey.length > 0) {
       try{
         if (checkCorrectPrivateAndPublicKeys(privKey, myUser.User.res.pubkey)) {
-          // localStorage.setItem(addr, privKey);
-          // localStorage.setItem(account.decodedAddress, myUser.User.res.pubkey);
           const info: YourInfo = {privateKey: privKey, publivKey: myUser.User.res.pubkey, login: myUser.User.res.login, name: myUser.User.res.name, contract: myUser.User.res.contract};
           localStorage.setItem(addr, JSON.stringify(info));
           navigate(`/${account?.meta.name}`);
@@ -57,7 +55,7 @@ export default function LoginPage() {
         minHeight: '100vh',
         backgroundColor: '#222',
         color: 'white',
-        padding: '20px', // Added padding for better spacing
+        padding: '20px',
       }}
     >
       <input
@@ -73,8 +71,8 @@ export default function LoginPage() {
           marginBottom: '20px',
           borderRadius: '5px',
           width: '100%',
-          maxWidth: '500px', // Increased max-width to accommodate longer keys
-          fontSize: '14px', // Adjusted font size to fit longer text
+          maxWidth: '500px',
+          fontSize: '14px',
         }}
       />
       <button

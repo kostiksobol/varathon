@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useMemo } from 'react'
 import metaMainConnectorTxt from 'assets/meta/main_connector.meta.txt'
 import { gearApiContext } from 'context'
 import { useAccount } from '@gear-js/react-hooks';
-import { useContractState, useContractStateOnce } from 'hooks/hooks';
+import { useContractStateOnce } from 'hooks/hooks';
 import { MAIN_CONTRACT_ADDRESS } from 'consts';
 import { useNavigate } from 'react-router-dom';
 import { HexString } from '@gear-js/api';

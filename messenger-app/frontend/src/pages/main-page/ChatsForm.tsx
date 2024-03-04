@@ -1,20 +1,14 @@
 import { HexString } from '@gear-js/api';
 import { useAccount, useSendMessage } from '@gear-js/react-hooks';
-import { MAIN_CONTRACT_ADDRESS } from 'consts';
 import { useProgramMetadata } from 'hooks';
 import React, { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom';
 import { encryptDataWithPubKey } from 'utils/crypto-defence/public-private-key-encryption';
 
 import metaGroupConnectionTxt from 'assets/meta/user_contract.meta.txt';
-
-import metaMainConnectorTxt from 'assets/meta/main_connector.meta.txt'
 import { ChatButton } from './utilts/ChatButton';
 import CreateNewChatButton from './UI/CreateNewChatButton';
-import { IFuckYou, db, getLastRecordIdByUserId, getUsersByChatId, setLastRecordIdForUserId } from 'utils/indexedDB';
+import { db, getLastRecordIdByUserId, setLastRecordIdForUserId } from 'utils/indexedDB';
 import GetChatIds from './GetChatIds';
-import MessagesLoader from './MessagesLoader';
-// import UsersLoader from './UsersLoader';
 import { YourInfo } from './MainLayer';
 import { createSymmetricKey, encryptText, symmetricKeyToString } from 'utils/crypto-defence/symmetric-key-encryption';
 import { createHMACWithNonce } from 'utils/crypto-defence/HMAC';
@@ -39,6 +33,8 @@ export default function ChatsForm() {
   const [lengthChatIds, setLengthChatIds] = useState<number>(0);
   const [isChatIdsLoaded, setIsChatIdsLoaded] = useState(false);
 
+  const [privateKey, setPrivateKey] = useState<string>();
+
   const payload = account ? useMemo(() => ({ GetLastRecords: { from: lengthChatIds } }), [lengthChatIds]) : null;
 
   useEffect(() => {
@@ -46,14 +42,8 @@ export default function ChatsForm() {
     if (raw_info) {
       const info: YourInfo = JSON.parse(raw_info);
       setContract(info.contract);
+      setPrivateKey(info.privateKey);
     }
-    // const creatingHook = function (modifications: any, primKey: any, obj: IFuckYou, trans: any) {
-    //   if (obj.userId == account!.address) {
-    //     setLengthChatIds(obj.lastRecordId);
-    //   }
-    // };
-
-    // db.fuckyou.hook('updating', creatingHook);
     getLastRecordIdByUserId(account!.address).then(lastRecordId => {
       if (lastRecordId) {
         setLengthChatIds(lastRecordId);
@@ -76,10 +66,6 @@ export default function ChatsForm() {
       .catch(error => {
         console.error("Error loading chat ids:", error);
       });
-
-    // return (() => {
-    //   db.fuckyou.hook('updating').unsubscribe(creatingHook);
-    // });
   }, []);
 
   const createNewChat = useSendMessage(contract, useProgramMetadata(metaGroupConnectionTxt));
@@ -93,7 +79,7 @@ export default function ChatsForm() {
         const info: YourInfo = JSON.parse(raw_info);
         const invitation: Invitation = {sym_key: str_sym_key, from_contract_id: info.contract}
         const str_invitation = JSON.stringify(invitation);
-        console.log(str_invitation);
+        
         const record = encryptDataWithPubKey(info.publivKey, str_invitation);
         const message: InvitationMessage = {name, invited: account!.decodedAddress, members: [account!.decodedAddress]};
         const encrypted_content = await encryptText(JSON.stringify(message), sym_key);
@@ -116,7 +102,7 @@ export default function ChatsForm() {
         padding: '1rem',
       }}
     >
-      {isChatIdsLoaded && payload ? (<GetChatIds payload={payload} setChatIds={setChatIds} setLengthChatIds={setLengthChatIds} />) : null}
+      {isChatIdsLoaded && payload && privateKey ? (<GetChatIds payload={payload} privateKey={privateKey} setChatIds={setChatIds} setLengthChatIds={setLengthChatIds} />) : null}
 
       {account && chatIds?.map((id) => (
         <React.Fragment key={id}>

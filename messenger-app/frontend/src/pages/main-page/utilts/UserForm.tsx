@@ -6,9 +6,10 @@ type UserFormProps = {
     address: HexString;
     login: string;
     name: string;
+    contract: HexString;
 };
 
-export function UserForm({address, login, name}: UserFormProps){
+export function UserForm({address, login, name, contract}: UserFormProps){
   const [showUserId, setShowUserId] = useState(false);
 
   const toggleChatId = () => {
@@ -58,6 +59,7 @@ export function UserForm({address, login, name}: UserFormProps){
         <>
           <div style={{ color: '#ddd', marginTop: '5px' }}>Login: {login}</div>
           <div style={{ color: '#ddd', marginTop: '5px' }}>Address: {address}</div>
+          <div style={{ color: '#ddd', marginTop: '5px' }}>Contract: {contract}</div>
         </>
       )}
     </div>

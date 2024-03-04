@@ -1,5 +1,5 @@
 import { HexString } from '@gear-js/api';
-import React, { useContext, useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom';
 import { UserForm } from './utilts/UserForm';
 import { useAccount, useSendMessage } from '@gear-js/react-hooks';
@@ -7,16 +7,15 @@ import { useAccount, useSendMessage } from '@gear-js/react-hooks';
 import metaGroupConnectionTxt from 'assets/meta/user_contract.meta.txt'
 import metaMainConnectorTxt from 'assets/meta/main_connector.meta.txt'
 import AddNewUserForm from './UI/AddNewUserForm';
-import { decryptDataWithPrivKey, encryptDataWithPubKey } from 'utils/crypto-defence/public-private-key-encryption';
+import { encryptDataWithPubKey } from 'utils/crypto-defence/public-private-key-encryption';
 import { useProgramMetadata } from 'hooks';
 import { gearApiContext } from 'context';
 import { readContractState } from 'hooks/hooks';
 import { MAIN_CONTRACT_ADDRESS } from 'consts';
 import { IUser, User, db, getNameByChatId, getSymmetricKeyByChatId, getUsersByChatId } from 'utils/indexedDB';
-import { stringToHex } from '@polkadot/util';
 import { YourInfo } from './MainLayer';
 import { Invitation, InvitationMessage } from './ChatsForm';
-import { encryptText, stringToSymmetricKey } from 'utils/crypto-defence/symmetric-key-encryption';
+import { encryptText } from 'utils/crypto-defence/symmetric-key-encryption';
 import { createHMACWithNonce } from 'utils/crypto-defence/HMAC';
 
 export default function UsersForm() {
@@ -83,22 +82,6 @@ export default function UsersForm() {
 
   const addUserMessage = useSendMessage(contract, useProgramMetadata(metaGroupConnectionTxt));
   const [showNotification, setShowNotification] = useState(false);
-
-  // function handleAddUserClickk(newUser: string){
-  //   return async () => {
-  //     if(api){
-  //       if(newUser[0] === '0' && newUser[1] === 'x'){
-  //         const state = await readContractState<{ User: { res: { address: HexString, login: string, name: string, pubkey: string } } }>(api, MAIN_CONTRACT_ADDRESS, metaMainConnectorTxt, { GetUserByAddress: { address: newUser } });
-  //         if(symKey && state.User.res.pubkey.length > 0){
-
-  //         }
-  //       }
-  //       else{
-
-  //       }
-  //     }
-  //   }
-  // }
 
   function handleAddUserClick(newUser: string) {
     return () => {
@@ -190,7 +173,7 @@ export default function UsersForm() {
       }}
     >
       {users.map((user, index) => (
-        <UserForm key={index} address={user.address} login={user.login} name={user.name} />
+        <UserForm key={index} address={user.address} login={user.login} name={user.name} contract={user.contract}/>
       ))}
       {showNotification && (
         <div
